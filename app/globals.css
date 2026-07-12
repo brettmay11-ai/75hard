@@ -167,6 +167,55 @@ button {
   text-transform: uppercase;
 }
 
+.view-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fffaf0;
+  padding: 4px;
+}
+
+.view-switch button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #625746;
+  font-size: 0.9rem;
+  font-weight: 900;
+}
+
+.view-switch .view-switch-active {
+  background: #171512;
+  color: #ffffff;
+}
+
+.settings-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-panel {
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fffaf0;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgb(23 21 18 / 0.06);
+}
+
+.settings-panel h2 {
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.settings-panel p {
+  margin-top: 4px;
+  color: #625746;
+  font-size: 0.95rem;
+}
+
 .task-row {
   display: grid;
   grid-template-columns: 48px 1fr;
@@ -358,5 +407,9 @@ button {
 @media (min-width: 768px) {
   .board-grid {
     grid-template-columns: repeat(15, minmax(0, 1fr));
+  }
+
+  .settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

@@ -25,6 +25,8 @@ type ReminderSettings = {
   endTime: string;
 };
 
+type AppView = "dashboard" | "settings";
+
 const TASKS = [
   { key: "diet", label: "Diet followed", detail: "No cheats, no alcohol" },
   { key: "workoutIndoor", label: "Workout 1", detail: "45 minutes" },
@@ -109,6 +111,7 @@ export default function Home() {
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationPermission>("default");
   const [celebrationDay, setCelebrationDay] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<AppView>("dashboard");
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -296,22 +299,44 @@ export default function Home() {
               Track the six daily promises, keep the streak honest, and see the full 75-day board at a glance.
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-2 text-center sm:min-w-[360px]">
-            <div className="stat">
-              <span>{completedDays}</span>
-              <small>Done</small>
-            </div>
-            <div className="stat">
-              <span>{progress}%</span>
-              <small>Progress</small>
-            </div>
-            <div className="stat">
-              <span>{Math.max(TOTAL_DAYS - completedDays, 0)}</span>
-              <small>Left</small>
+          <div className="grid gap-3 sm:min-w-[360px]">
+            <nav aria-label="App sections" className="view-switch">
+              <button
+                aria-pressed={activeView === "dashboard"}
+                className={activeView === "dashboard" ? "view-switch-active" : ""}
+                onClick={() => setActiveView("dashboard")}
+                type="button"
+              >
+                Dashboard
+              </button>
+              <button
+                aria-pressed={activeView === "settings"}
+                className={activeView === "settings" ? "view-switch-active" : ""}
+                onClick={() => setActiveView("settings")}
+                type="button"
+              >
+                Settings
+              </button>
+            </nav>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="stat">
+                <span>{completedDays}</span>
+                <small>Done</small>
+              </div>
+              <div className="stat">
+                <span>{progress}%</span>
+                <small>Progress</small>
+              </div>
+              <div className="stat">
+                <span>{Math.max(TOTAL_DAYS - completedDays, 0)}</span>
+                <small>Left</small>
+              </div>
             </div>
           </div>
         </header>
 
+        {activeView === "dashboard" ? (
+          <>
         <div className="grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
           <section className="rounded-lg border border-[#d8d0c2] bg-[#fffaf0] p-4 shadow-sm sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -423,9 +448,45 @@ export default function Home() {
               </p>
             </section>
 
-            <section className="rounded-lg border border-[#d8d0c2] bg-[#fffaf0] p-5 shadow-sm">
-              <h2 className="text-xl font-bold">Setup</h2>
-              <label className="mt-4 block text-sm font-bold" htmlFor="start-date">
+          </aside>
+        </div>
+
+        <section className="rounded-lg border border-[#d8d0c2] bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-xl font-bold">75-Day Board</h2>
+              <p className="text-sm text-[#625746]">Tap any square to review or update that day.</p>
+            </div>
+            <p className="text-sm font-bold text-[#2f6f66]">{completedDays} complete</p>
+          </div>
+          <div className="board-grid mt-4">
+            {Array.from({ length: TOTAL_DAYS }, (_, index) => {
+              const date = addDays(state.startDate, index);
+              const complete = isComplete(state.records[date]);
+              const isSelected = date === selectedDate;
+              const isPastToday = diffDays(state.startDate, date) < currentDay;
+              return (
+                <button
+                  aria-label={`Day ${index + 1}`}
+                  className={`day-cell ${complete ? "day-cell-complete" : ""} ${isSelected ? "day-cell-selected" : ""} ${isPastToday && !complete ? "day-cell-missed" : ""}`}
+                  key={date}
+                  onClick={() => setSelectedDate(date)}
+                  type="button"
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+          </>
+        ) : (
+          <section className="settings-grid">
+            <div className="settings-panel">
+              <h2>Setup</h2>
+              <p>Adjust the challenge start date or restart the tracker from today.</p>
+
+              <label className="mt-5 block text-sm font-bold" htmlFor="start-date">
                 Start date
               </label>
               <input
@@ -435,18 +496,21 @@ export default function Home() {
                 type="date"
                 value={state.startDate}
               />
-              <button className="mt-4 h-11 w-full rounded-md bg-[#b94b3d] px-4 text-sm font-bold text-white" onClick={resetTracker}>
+
+              <button
+                className="mt-4 h-11 w-full rounded-md bg-[#b94b3d] px-4 text-sm font-bold text-white"
+                onClick={resetTracker}
+                type="button"
+              >
                 Restart at today
               </button>
-            </section>
+            </div>
 
-            <section className="rounded-lg border border-[#d8d0c2] bg-[#fffaf0] p-5 shadow-sm">
-              <h2 className="text-xl font-bold">Water Reminders</h2>
-              <p className="mt-1 text-sm text-[#625746]">
-                Sends device notifications until today&apos;s water box is checked.
-              </p>
+            <div className="settings-panel">
+              <h2>Water Reminders</h2>
+              <p>Sends device notifications until today&apos;s water box is checked.</p>
 
-              <div className="mt-4 grid gap-3">
+              <div className="mt-5 grid gap-3">
                 <button
                   className={`h-11 rounded-md px-4 text-sm font-bold text-white ${
                     reminders.enabled ? "bg-[#2f6f66]" : "bg-[#171512]"
@@ -522,38 +586,9 @@ export default function Home() {
                   Status: {notificationPermission}
                 </p>
               </div>
-            </section>
-          </aside>
-        </div>
-
-        <section className="rounded-lg border border-[#d8d0c2] bg-white p-4 shadow-sm sm:p-5">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="text-xl font-bold">75-Day Board</h2>
-              <p className="text-sm text-[#625746]">Tap any square to review or update that day.</p>
             </div>
-            <p className="text-sm font-bold text-[#2f6f66]">{completedDays} complete</p>
-          </div>
-          <div className="board-grid mt-4">
-            {Array.from({ length: TOTAL_DAYS }, (_, index) => {
-              const date = addDays(state.startDate, index);
-              const complete = isComplete(state.records[date]);
-              const isSelected = date === selectedDate;
-              const isPastToday = diffDays(state.startDate, date) < currentDay;
-              return (
-                <button
-                  aria-label={`Day ${index + 1}`}
-                  className={`day-cell ${complete ? "day-cell-complete" : ""} ${isSelected ? "day-cell-selected" : ""} ${isPastToday && !complete ? "day-cell-missed" : ""}`}
-                  key={date}
-                  onClick={() => setSelectedDate(date)}
-                  type="button"
-                >
-                  {index + 1}
-                </button>
-              );
-            })}
-          </div>
-        </section>
+          </section>
+        )}
       </section>
     </main>
   );
