@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f5f2eb;
+  --foreground: #171512;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+.stat {
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #fffaf0;
+  padding: 12px 8px;
+}
+
+.stat span {
+  display: block;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.stat small {
+  margin-top: 6px;
+  display: block;
+  color: #625746;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.task-row {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  align-items: center;
+  min-height: 72px;
+  cursor: pointer;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 14px 10px 10px;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.task-row:active {
+  transform: scale(0.99);
+}
+
+.task-row input {
+  width: 28px;
+  height: 28px;
+  accent-color: #2f6f66;
+}
+
+.task-row strong,
+.task-row small {
+  display: block;
+}
+
+.task-row strong {
+  font-size: 1rem;
+}
+
+.task-row small {
+  margin-top: 3px;
+  color: #625746;
+  font-size: 0.86rem;
+}
+
+.task-row-complete {
+  border-color: #69a87f;
+  background: #eef8ef;
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 1px solid #d8d0c2;
+  border-radius: 7px;
+  background: #fffaf0;
+  color: #171512;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.day-cell-complete {
+  border-color: #2f6f66;
+  background: #2f6f66;
+  color: white;
+}
+
+.day-cell-selected {
+  outline: 3px solid #d9a441;
+  outline-offset: 2px;
+}
+
+.day-cell-missed {
+  border-color: #c97d71;
+  background: #fff0ed;
+}
+
+@media (max-width: 420px) {
+  .task-row {
+    grid-template-columns: 42px 1fr;
+    min-height: 66px;
+    padding-right: 10px;
+  }
+}
+
+@media (min-width: 640px) {
+  .board-grid {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .board-grid {
+    grid-template-columns: repeat(15, minmax(0, 1fr));
+  }
+}
