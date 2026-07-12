@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type DayRecord = {
   date: string;
@@ -65,6 +65,7 @@ function isComplete(record?: DayRecord) {
 
 export default function Home() {
   const today = toDateInput(new Date());
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<TrackerState>({
     startDate: today,
     records: { [today]: createRecord(today) },
@@ -127,6 +128,10 @@ export default function Home() {
     setSelectedDate(today);
   }
 
+  function openPhotoCapture() {
+    photoInputRef.current?.click();
+  }
+
   return (
     <main className="min-h-screen bg-[#f5f2eb] text-[#171512]">
       <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
@@ -177,24 +182,62 @@ export default function Home() {
             </div>
 
             <div className="mt-5 grid gap-3">
-              {TASKS.map((task) => (
-                <label
-                  className={`task-row ${selectedRecord[task.key] ? "task-row-complete" : ""}`}
-                  key={task.key}
-                >
-                  <input
-                    checked={selectedRecord[task.key]}
-                    onChange={(event) =>
-                      updateRecord({ ...selectedRecord, [task.key]: event.target.checked })
-                    }
-                    type="checkbox"
-                  />
-                  <span>
-                    <strong>{task.label}</strong>
-                    <small>{task.detail}</small>
-                  </span>
-                </label>
-              ))}
+              {TASKS.map((task) => {
+                if (task.key === "photo") {
+                  return (
+                    <button
+                      className={`task-row text-left ${selectedRecord.photo ? "task-row-complete" : ""}`}
+                      key={task.key}
+                      onClick={openPhotoCapture}
+                      type="button"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`photo-check ${selectedRecord.photo ? "photo-check-complete" : ""}`}
+                      />
+                      <span>
+                        <strong>{task.label}</strong>
+                        <small>
+                          {selectedRecord.photo ? "Photo selected for today" : "Tap to open camera"}
+                        </small>
+                      </span>
+                    </button>
+                  );
+                }
+
+                return (
+                  <label
+                    className={`task-row ${selectedRecord[task.key] ? "task-row-complete" : ""}`}
+                    key={task.key}
+                  >
+                    <input
+                      checked={selectedRecord[task.key]}
+                      onChange={(event) =>
+                        updateRecord({ ...selectedRecord, [task.key]: event.target.checked })
+                      }
+                      type="checkbox"
+                    />
+                    <span>
+                      <strong>{task.label}</strong>
+                      <small>{task.detail}</small>
+                    </span>
+                  </label>
+                );
+              })}
+              <input
+                accept="image/*"
+                aria-label="Take progress photo"
+                capture="environment"
+                className="sr-only"
+                onChange={(event) => {
+                  if (event.target.files?.length) {
+                    updateRecord({ ...selectedRecord, photo: true });
+                    event.target.value = "";
+                  }
+                }}
+                ref={photoInputRef}
+                type="file"
+              />
             </div>
 
             <div className="mt-5 rounded-lg border border-[#d8d0c2] bg-white p-4">
