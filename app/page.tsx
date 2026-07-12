@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 
 type DayRecord = {
   date: string;
@@ -44,6 +44,7 @@ const DEFAULT_REMINDERS: ReminderSettings = {
   startTime: "08:00",
   endTime: "20:00",
 };
+const CELEBRATION_BITS = Array.from({ length: 24 }, (_, index) => index);
 
 function toDateInput(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -107,6 +108,7 @@ export default function Home() {
   const [reminders, setReminders] = useState<ReminderSettings>(DEFAULT_REMINDERS);
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationPermission>("default");
+  const [celebrationDay, setCelebrationDay] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -176,6 +178,15 @@ export default function Home() {
     return () => window.clearInterval(timer);
   }, [loaded, notificationPermission, reminders, state.records, today]);
 
+  useEffect(() => {
+    if (!celebrationDay) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => setCelebrationDay(null), 2200);
+    return () => window.clearTimeout(timer);
+  }, [celebrationDay]);
+
   const currentDay = Math.min(Math.max(diffDays(state.startDate, today), 1), TOTAL_DAYS);
   const selectedDay = diffDays(state.startDate, selectedDate);
   const selectedRecord = state.records[selectedDate] ?? createRecord(selectedDate);
@@ -198,6 +209,10 @@ export default function Home() {
         [nextRecord.date]: nextRecord,
       },
     }));
+
+    if (!isComplete(state.records[nextRecord.date]) && isComplete(nextRecord)) {
+      setCelebrationDay(nextRecord.date);
+    }
   }
 
   function updateStartDate(startDate: string) {
@@ -257,6 +272,19 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#f5f2eb] text-[#171512]">
+      {celebrationDay && (
+        <div aria-live="polite" className="celebration" role="status">
+          <div className="celebration-burst" />
+          <div className="celebration-card">
+            <span className="celebration-kicker">Day locked in</span>
+            <strong>Complete</strong>
+            <small>{celebrationDay}</small>
+          </div>
+          {CELEBRATION_BITS.map((bit) => (
+            <span className="celebration-bit" key={bit} style={{ "--bit": bit } as CSSProperties} />
+          ))}
+        </div>
+      )}
       <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
         <header className="grid gap-4 border-b border-[#d8d0c2] pb-5 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>

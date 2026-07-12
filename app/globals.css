@@ -37,6 +37,102 @@ button {
   touch-action: manipulation;
 }
 
+.celebration {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.celebration::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background:
+    radial-gradient(circle at 50% 42%, rgb(217 164 65 / 0.28), transparent 28%),
+    rgb(23 21 18 / 0.12);
+  animation: celebration-fade 2.2s ease both;
+}
+
+.celebration-burst {
+  position: absolute;
+  width: min(72vw, 420px);
+  aspect-ratio: 1;
+  border: 2px solid rgb(47 111 102 / 0.45);
+  border-radius: 999px;
+  animation: celebration-ring 1.3s ease-out both;
+}
+
+.celebration-card {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  min-width: min(82vw, 320px);
+  gap: 4px;
+  justify-items: center;
+  border: 1px solid #d9a441;
+  border-radius: 8px;
+  background: #fffaf0;
+  padding: 22px 28px;
+  box-shadow: 0 24px 80px rgb(23 21 18 / 0.24);
+  animation: celebration-card 1.7s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+.celebration-card strong {
+  color: #171512;
+  font-size: clamp(2.6rem, 12vw, 4.8rem);
+  font-weight: 950;
+  line-height: 0.92;
+}
+
+.celebration-card small,
+.celebration-kicker {
+  color: #625746;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.celebration-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+}
+
+.celebration-card small {
+  font-size: 0.78rem;
+}
+
+.celebration-bit {
+  --angle: calc(var(--bit) * 15deg);
+  --distance: calc(130px + (var(--bit) % 5) * 18px);
+  --delay: calc((var(--bit) % 8) * 24ms);
+  position: absolute;
+  z-index: 1;
+  width: 10px;
+  height: 18px;
+  border-radius: 3px;
+  background: #d9a441;
+  transform: rotate(var(--angle)) translateY(0);
+  animation: celebration-bit 1.45s ease-out var(--delay) both;
+}
+
+.celebration-bit:nth-child(3n) {
+  background: #2f6f66;
+}
+
+.celebration-bit:nth-child(4n) {
+  background: #b94b3d;
+}
+
+.celebration-bit:nth-child(5n) {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #171512;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -172,6 +268,77 @@ button {
 .day-cell-missed {
   border-color: #c97d71;
   background: #fff0ed;
+}
+
+@keyframes celebration-fade {
+  0%,
+  82% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes celebration-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes celebration-card {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.86);
+  }
+
+  16% {
+    opacity: 1;
+    transform: translateY(0) scale(1.04);
+  }
+
+  28%,
+  74% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+}
+
+@keyframes celebration-bit {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateY(0) scale(0.6);
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateY(calc(var(--distance) * -1)) rotate(160deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebration::before,
+  .celebration-burst,
+  .celebration-card,
+  .celebration-bit {
+    animation-duration: 1ms;
+  }
 }
 
 @media (max-width: 420px) {
