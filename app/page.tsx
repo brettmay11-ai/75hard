@@ -18,6 +18,13 @@ type TrackerState = {
   records: Record<string, DayRecord>;
 };
 
+type ReminderSettings = {
+  enabled: boolean;
+  intervalMinutes: number;
+  startTime: string;
+  endTime: string;
+};
+
 const TASKS = [
   { key: "diet", label: "Diet followed", detail: "No cheats, no alcohol" },
   { key: "workoutIndoor", label: "Workout 1", detail: "45 minutes" },
@@ -28,7 +35,15 @@ const TASKS = [
 ] as const;
 
 const STORAGE_KEY = "personal-75-hard-tracker";
+const REMINDER_KEY = "personal-75-hard-reminders";
+const LAST_WATER_REMINDER_KEY = "personal-75-hard-last-water-reminder";
 const TOTAL_DAYS = 75;
+const DEFAULT_REMINDERS: ReminderSettings = {
+  enabled: false,
+  intervalMinutes: 90,
+  startTime: "08:00",
+  endTime: "20:00",
+};
 
 function toDateInput(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -63,6 +78,23 @@ function isComplete(record?: DayRecord) {
   return Boolean(record && TASKS.every((task) => record[task.key]));
 }
 
+function timeToMinutes(time: string) {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function isWithinReminderWindow(settings: ReminderSettings, date: Date) {
+  const now = date.getHours() * 60 + date.getMinutes();
+  const start = timeToMinutes(settings.startTime);
+  const end = timeToMinutes(settings.endTime);
+
+  if (start <= end) {
+    return now >= start && now <= end;
+  }
+
+  return now >= start || now <= end;
+}
+
 export default function Home() {
   const today = toDateInput(new Date());
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +104,9 @@ export default function Home() {
   });
   const [selectedDate, setSelectedDate] = useState(today);
   const [loaded, setLoaded] = useState(false);
+  const [reminders, setReminders] = useState<ReminderSettings>(DEFAULT_REMINDERS);
+  const [notificationPermission, setNotificationPermission] =
+    useState<NotificationPermission>("default");
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -84,14 +119,62 @@ export default function Home() {
         window.localStorage.removeItem(STORAGE_KEY);
       }
     }
+
+    const savedReminders = window.localStorage.getItem(REMINDER_KEY);
+    if (savedReminders) {
+      try {
+        setReminders({ ...DEFAULT_REMINDERS, ...JSON.parse(savedReminders) });
+      } catch {
+        window.localStorage.removeItem(REMINDER_KEY);
+      }
+    }
+
+    if ("Notification" in window) {
+      setNotificationPermission(Notification.permission);
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+    }
+
     setLoaded(true);
   }, [today]);
 
   useEffect(() => {
     if (loaded) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      window.localStorage.setItem(REMINDER_KEY, JSON.stringify(reminders));
     }
-  }, [loaded, state]);
+  }, [loaded, reminders, state]);
+
+  useEffect(() => {
+    if (!loaded || !reminders.enabled || notificationPermission !== "granted") {
+      return;
+    }
+
+    const checkWaterReminder = () => {
+      const now = new Date();
+      const todayRecord = state.records[today];
+
+      if (todayRecord?.water || !isWithinReminderWindow(reminders, now)) {
+        return;
+      }
+
+      const lastReminder = window.localStorage.getItem(LAST_WATER_REMINDER_KEY);
+      const intervalMs = reminders.intervalMinutes * 60 * 1000;
+
+      if (lastReminder && now.getTime() - Number(lastReminder) < intervalMs) {
+        return;
+      }
+
+      window.localStorage.setItem(LAST_WATER_REMINDER_KEY, String(now.getTime()));
+      void showWaterNotification();
+    };
+
+    checkWaterReminder();
+    const timer = window.setInterval(checkWaterReminder, 60000);
+    return () => window.clearInterval(timer);
+  }, [loaded, notificationPermission, reminders, state.records, today]);
 
   const currentDay = Math.min(Math.max(diffDays(state.startDate, today), 1), TOTAL_DAYS);
   const selectedDay = diffDays(state.startDate, selectedDate);
@@ -130,6 +213,46 @@ export default function Home() {
 
   function openPhotoCapture() {
     photoInputRef.current?.click();
+  }
+
+  async function showWaterNotification() {
+    const title = "Drink water";
+    const body = "Quick 75 Hard check-in: get some water in before the day gets away.";
+
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification(title, {
+        body,
+        badge: "/favicon.svg",
+        icon: "/favicon.svg",
+        tag: "water-reminder",
+      });
+      return;
+    }
+
+    new Notification(title, { body, tag: "water-reminder" });
+  }
+
+  async function enableReminders() {
+    if (!("Notification" in window)) {
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    if (permission === "granted") {
+      setReminders((current) => ({ ...current, enabled: true }));
+      await showWaterNotification();
+    }
+  }
+
+  async function testReminder() {
+    if (notificationPermission === "granted") {
+      await showWaterNotification();
+      return;
+    }
+
+    await enableReminders();
   }
 
   return (
@@ -287,6 +410,90 @@ export default function Home() {
               <button className="mt-4 h-11 w-full rounded-md bg-[#b94b3d] px-4 text-sm font-bold text-white" onClick={resetTracker}>
                 Restart at today
               </button>
+            </section>
+
+            <section className="rounded-lg border border-[#d8d0c2] bg-[#fffaf0] p-5 shadow-sm">
+              <h2 className="text-xl font-bold">Water Reminders</h2>
+              <p className="mt-1 text-sm text-[#625746]">
+                Sends device notifications until today&apos;s water box is checked.
+              </p>
+
+              <div className="mt-4 grid gap-3">
+                <button
+                  className={`h-11 rounded-md px-4 text-sm font-bold text-white ${
+                    reminders.enabled ? "bg-[#2f6f66]" : "bg-[#171512]"
+                  }`}
+                  onClick={() => {
+                    if (notificationPermission === "granted") {
+                      setReminders((current) => ({ ...current, enabled: !current.enabled }));
+                    } else {
+                      void enableReminders();
+                    }
+                  }}
+                  type="button"
+                >
+                  {reminders.enabled ? "Reminders on" : "Enable reminders"}
+                </button>
+
+                <label className="grid gap-2 text-sm font-bold" htmlFor="interval">
+                  Remind every
+                  <select
+                    className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                    id="interval"
+                    onChange={(event) =>
+                      setReminders((current) => ({
+                        ...current,
+                        intervalMinutes: Number(event.target.value),
+                      }))
+                    }
+                    value={reminders.intervalMinutes}
+                  >
+                    <option value={30}>30 minutes</option>
+                    <option value={60}>1 hour</option>
+                    <option value={90}>90 minutes</option>
+                    <option value={120}>2 hours</option>
+                  </select>
+                </label>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="grid gap-2 text-sm font-bold" htmlFor="start-time">
+                    Start
+                    <input
+                      className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                      id="start-time"
+                      onChange={(event) =>
+                        setReminders((current) => ({ ...current, startTime: event.target.value }))
+                      }
+                      type="time"
+                      value={reminders.startTime}
+                    />
+                  </label>
+                  <label className="grid gap-2 text-sm font-bold" htmlFor="end-time">
+                    End
+                    <input
+                      className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                      id="end-time"
+                      onChange={(event) =>
+                        setReminders((current) => ({ ...current, endTime: event.target.value }))
+                      }
+                      type="time"
+                      value={reminders.endTime}
+                    />
+                  </label>
+                </div>
+
+                <button
+                  className="h-11 rounded-md border border-[#c9beac] bg-white px-4 text-sm font-bold"
+                  onClick={() => void testReminder()}
+                  type="button"
+                >
+                  Send test
+                </button>
+
+                <p className="text-xs font-semibold text-[#625746]">
+                  Status: {notificationPermission}
+                </p>
+              </div>
             </section>
           </aside>
         </div>

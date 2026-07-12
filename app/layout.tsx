@@ -15,9 +15,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Personal 75 Hard Tracker",
   description: "A local-first 75 Hard progress tracker for daily commitments.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "75 Hard",
+  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
 };
 

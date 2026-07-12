@@ -1,0 +1,18 @@
+{
+  "name": "Personal 75 Hard Tracker",
+  "short_name": "75 Hard",
+  "description": "Track 75 Hard progress and water reminders.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f2eb",
+  "theme_color": "#2f6f66",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
