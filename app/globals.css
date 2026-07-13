@@ -360,6 +360,46 @@ button {
   font-weight: 900;
 }
 
+.workout-detail {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.workout-detail h3 {
+  color: #171512;
+  font-size: 0.9rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.workout-detail ul {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.workout-detail li {
+  display: grid;
+  gap: 2px;
+  border-left: 3px solid #d9a441;
+  background: #ffffff;
+  padding: 8px 10px;
+}
+
+.workout-detail li span {
+  color: #171512;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.workout-detail li strong {
+  color: #625746;
+  font-size: 0.82rem;
+}
+
 .day-cell {
   aspect-ratio: 1;
   min-width: 0;

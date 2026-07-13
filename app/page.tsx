@@ -31,6 +31,17 @@ type WorkoutReminderSettings = {
   workoutTwoTime: string;
 };
 
+type WorkoutMove = {
+  name: string;
+  prescription: string;
+};
+
+type WorkoutPlan = {
+  title: string;
+  workoutOne: WorkoutMove[];
+  workoutTwo: WorkoutMove[];
+};
+
 type SelectedPhoto = {
   date: string;
   file: File;
@@ -65,41 +76,102 @@ const DEFAULT_WORKOUT_REMINDERS: WorkoutReminderSettings = {
   workoutOneTime: "07:00",
   workoutTwoTime: "17:30",
 };
-const WORKOUT_ROTATION = [
+const WORKOUT_ROTATION: WorkoutPlan[] = [
   {
     title: "Push",
-    workoutOne: "Chest, shoulders, and triceps strength.",
-    workoutTwo: "Outdoor walk, ruck, or easy zone-2 cardio.",
+    workoutOne: [
+      { name: "Bench press or push-ups", prescription: "4 sets x 6-10 reps" },
+      { name: "Overhead press", prescription: "3 sets x 8-10 reps" },
+      { name: "Incline dumbbell press", prescription: "3 sets x 10-12 reps" },
+      { name: "Lateral raises", prescription: "3 sets x 12-15 reps" },
+      { name: "Triceps dips or pushdowns", prescription: "3 sets x 10-15 reps" },
+    ],
+    workoutTwo: [
+      { name: "Outdoor brisk walk", prescription: "45 minutes, steady pace" },
+      { name: "Optional ruck", prescription: "10-20 lb pack if recovery feels good" },
+    ],
   },
   {
     title: "Pull",
-    workoutOne: "Back, biceps, rear delts, and grip strength.",
-    workoutTwo: "Outdoor walk, incline walk, or light jog.",
+    workoutOne: [
+      { name: "Pull-ups or lat pulldowns", prescription: "4 sets x 6-10 reps" },
+      { name: "Bent-over row", prescription: "4 sets x 8-10 reps" },
+      { name: "Single-arm dumbbell row", prescription: "3 sets x 10 reps each side" },
+      { name: "Face pulls", prescription: "3 sets x 12-15 reps" },
+      { name: "Hammer curls", prescription: "3 sets x 10-12 reps" },
+    ],
+    workoutTwo: [
+      { name: "Outdoor incline walk", prescription: "45 minutes, conversational pace" },
+      { name: "Post-walk stretch", prescription: "5 minutes of lats and hips" },
+    ],
   },
   {
     title: "Run",
-    workoutOne: "Easy run, intervals, or tempo work.",
-    workoutTwo: "Outdoor recovery walk or mobility walk.",
+    workoutOne: [
+      { name: "Warm-up walk/jog", prescription: "8 minutes easy" },
+      { name: "Run intervals", prescription: "8 rounds: 1 minute hard, 90 seconds easy" },
+      { name: "Easy cooldown", prescription: "10-15 minutes walk/jog" },
+      { name: "Calf raises", prescription: "3 sets x 15 reps" },
+    ],
+    workoutTwo: [
+      { name: "Outdoor recovery walk", prescription: "45 minutes easy" },
+      { name: "Hip mobility", prescription: "5 minutes after walking" },
+    ],
   },
   {
     title: "Legs",
-    workoutOne: "Quads, hamstrings, glutes, and calves.",
-    workoutTwo: "Outdoor walk or easy bike if your legs need mercy.",
+    workoutOne: [
+      { name: "Squat or goblet squat", prescription: "4 sets x 6-10 reps" },
+      { name: "Romanian deadlift", prescription: "4 sets x 8-10 reps" },
+      { name: "Walking lunges", prescription: "3 sets x 10 reps each leg" },
+      { name: "Hip thrust or glute bridge", prescription: "3 sets x 10-12 reps" },
+      { name: "Standing calf raises", prescription: "4 sets x 12-15 reps" },
+    ],
+    workoutTwo: [
+      { name: "Outdoor walk", prescription: "45 minutes easy to moderate" },
+      { name: "Quad and hamstring stretch", prescription: "5 minutes total" },
+    ],
   },
   {
     title: "Core",
-    workoutOne: "Core, carries, mobility, and stability work.",
-    workoutTwo: "Outdoor walk, hike, or easy jog.",
+    workoutOne: [
+      { name: "Plank", prescription: "4 sets x 45-60 seconds" },
+      { name: "Dead bug", prescription: "3 sets x 10 reps each side" },
+      { name: "Hanging knee raise or reverse crunch", prescription: "3 sets x 10-15 reps" },
+      { name: "Farmer carry", prescription: "4 carries x 40-60 seconds" },
+      { name: "Side plank", prescription: "3 sets x 30-45 seconds each side" },
+    ],
+    workoutTwo: [
+      { name: "Outdoor walk or hike", prescription: "45 minutes steady" },
+      { name: "Breathing reset", prescription: "3 minutes nasal breathing" },
+    ],
   },
   {
     title: "Run",
-    workoutOne: "Steady outdoor run or run/walk intervals.",
-    workoutTwo: "Mobility, stretching, or a light recovery walk.",
+    workoutOne: [
+      { name: "Easy run", prescription: "30-35 minutes, zone 2" },
+      { name: "Strides", prescription: "6 rounds x 20 seconds fast, 60 seconds easy" },
+      { name: "Cooldown walk", prescription: "5-10 minutes" },
+      { name: "Tibialis raises", prescription: "3 sets x 15 reps" },
+    ],
+    workoutTwo: [
+      { name: "Outdoor mobility walk", prescription: "45 minutes easy" },
+      { name: "Ankle and calf mobility", prescription: "5 minutes total" },
+    ],
   },
   {
     title: "Full Body",
-    workoutOne: "Full-body circuit or upper/lower mix.",
-    workoutTwo: "Outdoor walk, hike, or relaxed cardio.",
+    workoutOne: [
+      { name: "Dumbbell or kettlebell deadlift", prescription: "4 sets x 8 reps" },
+      { name: "Push-ups", prescription: "4 sets x 8-15 reps" },
+      { name: "Goblet squat", prescription: "3 sets x 10-12 reps" },
+      { name: "One-arm row", prescription: "3 sets x 10 reps each side" },
+      { name: "Loaded carry", prescription: "4 carries x 45 seconds" },
+    ],
+    workoutTwo: [
+      { name: "Outdoor relaxed cardio", prescription: "45 minutes walk, hike, or bike" },
+      { name: "Full-body stretch", prescription: "5 minutes after cardio" },
+    ],
   },
 ];
 const CELEBRATION_BITS = Array.from({ length: 24 }, (_, index) => index);
@@ -163,6 +235,13 @@ function isWorkoutReminderDue(time: string, date: Date) {
 function getWorkoutPlan(startDate: string, dateString: string) {
   const dayIndex = Math.max(diffDays(startDate, dateString) - 1, 0);
   return WORKOUT_ROTATION[dayIndex % WORKOUT_ROTATION.length];
+}
+
+function summarizeWorkout(moves: WorkoutMove[]) {
+  return moves
+    .slice(0, 3)
+    .map((move) => `${move.name}: ${move.prescription}`)
+    .join("; ");
 }
 
 export default function Home() {
@@ -431,7 +510,7 @@ export default function Home() {
     const plan = getWorkoutPlan(state.startDate, today);
     const isFirstWorkout = slot === "one";
     const title = isFirstWorkout ? `Workout 1: ${plan.title}` : `Outdoor workout: ${plan.title}`;
-    const body = isFirstWorkout ? plan.workoutOne : plan.workoutTwo;
+    const body = summarizeWorkout(isFirstWorkout ? plan.workoutOne : plan.workoutTwo);
 
     if ("serviceWorker" in navigator) {
       const registration = await navigator.serviceWorker.ready;
@@ -735,15 +814,29 @@ export default function Home() {
                 Workout Focus
               </p>
               <h2 className="mt-2 text-2xl font-black">{selectedWorkoutPlan.title}</h2>
-              <div className="mt-4 grid gap-3 text-sm text-[#625746]">
-                <p>
-                  <strong className="text-[#171512]">Workout 1:</strong>{" "}
-                  {selectedWorkoutPlan.workoutOne}
-                </p>
-                <p>
-                  <strong className="text-[#171512]">Outdoor:</strong>{" "}
-                  {selectedWorkoutPlan.workoutTwo}
-                </p>
+              <div className="workout-detail">
+                <div>
+                  <h3>Workout 1</h3>
+                  <ul>
+                    {selectedWorkoutPlan.workoutOne.map((move) => (
+                      <li key={`${move.name}-${move.prescription}`}>
+                        <span>{move.name}</span>
+                        <strong>{move.prescription}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3>Outdoor</h3>
+                  <ul>
+                    {selectedWorkoutPlan.workoutTwo.map((move) => (
+                      <li key={`${move.name}-${move.prescription}`}>
+                        <span>{move.name}</span>
+                        <strong>{move.prescription}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </section>
 
