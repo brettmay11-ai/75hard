@@ -248,6 +248,49 @@ button {
   font-size: 0.95rem;
 }
 
+.settings-panel-wide {
+  grid-column: 1 / -1;
+}
+
+.workout-editor {
+  display: grid;
+  gap: 12px;
+}
+
+.workout-editor-day {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.workout-editor-day legend {
+  padding: 0 6px;
+  color: #171512;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.workout-editor-column {
+  display: grid;
+  gap: 8px;
+}
+
+.workout-editor-column h3 {
+  color: #625746;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.workout-editor-move {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
 .task-row {
   display: grid;
   grid-template-columns: 48px 1fr;
@@ -509,6 +552,10 @@ button {
     grid-template-columns: 42px 1fr;
     min-height: 66px;
     padding-right: 10px;
+  }
+
+  .workout-editor-move {
+    grid-template-columns: 1fr;
   }
 }
 

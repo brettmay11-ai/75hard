@@ -42,6 +42,8 @@ type WorkoutPlan = {
   workoutTwo: WorkoutMove[];
 };
 
+type WorkoutPlans = WorkoutPlan[];
+
 type SelectedPhoto = {
   date: string;
   file: File;
@@ -62,9 +64,13 @@ const TASKS = [
 const STORAGE_KEY = "personal-75-hard-tracker";
 const REMINDER_KEY = "personal-75-hard-reminders";
 const WORKOUT_REMINDER_KEY = "personal-75-hard-workout-reminders";
+const WORKOUT_PLANS_KEY = "personal-75-hard-workout-plans";
+const MILESTONES_KEY = "personal-75-hard-milestones";
+const PUSH_SUBSCRIPTION_KEY = "personal-75-hard-push-subscribed";
 const LAST_WATER_REMINDER_KEY = "personal-75-hard-last-water-reminder";
 const LAST_WORKOUT_REMINDER_KEY = "personal-75-hard-last-workout-reminder";
 const TOTAL_DAYS = 75;
+const MILESTONES = [7, 15, 30, 50, 75];
 const DEFAULT_REMINDERS: ReminderSettings = {
   enabled: false,
   intervalMinutes: 90,
@@ -232,9 +238,9 @@ function isWorkoutReminderDue(time: string, date: Date) {
   return now >= scheduled && now < scheduled + 60;
 }
 
-function getWorkoutPlan(startDate: string, dateString: string) {
+function getWorkoutPlan(plans: WorkoutPlans, startDate: string, dateString: string) {
   const dayIndex = Math.max(diffDays(startDate, dateString) - 1, 0);
-  return WORKOUT_ROTATION[dayIndex % WORKOUT_ROTATION.length];
+  return plans[dayIndex % plans.length] ?? WORKOUT_ROTATION[dayIndex % WORKOUT_ROTATION.length];
 }
 
 function summarizeWorkout(moves: WorkoutMove[]) {
@@ -242,6 +248,12 @@ function summarizeWorkout(moves: WorkoutMove[]) {
     .slice(0, 3)
     .map((move) => `${move.name}: ${move.prescription}`)
     .join("; ");
+}
+
+function base64ToBytes(value: string) {
+  const padding = "=".repeat((4 - (value.length % 4)) % 4);
+  const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
+  return Uint8Array.from(window.atob(base64), (character) => character.charCodeAt(0));
 }
 
 export default function Home() {
@@ -258,9 +270,12 @@ export default function Home() {
   const [reminders, setReminders] = useState<ReminderSettings>(DEFAULT_REMINDERS);
   const [workoutReminders, setWorkoutReminders] =
     useState<WorkoutReminderSettings>(DEFAULT_WORKOUT_REMINDERS);
+  const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlans>(WORKOUT_ROTATION);
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationPermission>("default");
+  const [serverPushStatus, setServerPushStatus] = useState("Not connected");
   const [celebrationDay, setCelebrationDay] = useState<string | null>(null);
+  const [celebrationTitle, setCelebrationTitle] = useState("Complete");
   const [activeView, setActiveView] = useState<AppView>("dashboard");
   const [selectedPhoto, setSelectedPhoto] = useState<SelectedPhoto | null>(null);
   const [refreshDistance, setRefreshDistance] = useState(0);
@@ -299,6 +314,18 @@ export default function Home() {
       }
     }
 
+    const savedWorkoutPlans = window.localStorage.getItem(WORKOUT_PLANS_KEY);
+    if (savedWorkoutPlans) {
+      try {
+        const parsed = JSON.parse(savedWorkoutPlans) as WorkoutPlans;
+        if (Array.isArray(parsed) && parsed.length === 7) {
+          setWorkoutPlans(parsed);
+        }
+      } catch {
+        window.localStorage.removeItem(WORKOUT_PLANS_KEY);
+      }
+    }
+
     if ("Notification" in window) {
       setNotificationPermission(Notification.permission);
     }
@@ -315,8 +342,30 @@ export default function Home() {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       window.localStorage.setItem(REMINDER_KEY, JSON.stringify(reminders));
       window.localStorage.setItem(WORKOUT_REMINDER_KEY, JSON.stringify(workoutReminders));
+      window.localStorage.setItem(WORKOUT_PLANS_KEY, JSON.stringify(workoutPlans));
     }
-  }, [loaded, reminders, state, workoutReminders]);
+  }, [loaded, reminders, state, workoutPlans, workoutReminders]);
+
+  useEffect(() => {
+    if (!loaded || window.localStorage.getItem(PUSH_SUBSCRIPTION_KEY) !== "true") return;
+    void navigator.serviceWorker?.ready.then(async (registration) => {
+      const subscription = await registration.pushManager.getSubscription();
+      if (!subscription) return;
+      await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subscription: subscription.toJSON(),
+          reminders,
+          workoutReminders,
+          workoutPlans,
+          startDate: state.startDate,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          records: { [today]: state.records[today] },
+        }),
+      });
+    });
+  }, [loaded, reminders, state, today, workoutPlans, workoutReminders]);
 
   useEffect(() => {
     if (!loaded || !reminders.enabled || notificationPermission !== "granted") {
@@ -385,7 +434,7 @@ export default function Home() {
     checkWorkoutReminders();
     const timer = window.setInterval(checkWorkoutReminders, 60000);
     return () => window.clearInterval(timer);
-  }, [loaded, notificationPermission, state.records, today, workoutReminders]);
+  }, [loaded, notificationPermission, state.records, today, workoutPlans, workoutReminders]);
 
   useEffect(() => {
     if (!celebrationDay) {
@@ -417,7 +466,7 @@ export default function Home() {
   const selectedCompleted = TASKS.filter((task) => selectedRecord[task.key]).length;
   const progress = Math.round((completedDays / TOTAL_DAYS) * 100);
   const finishDate = addDays(state.startDate, TOTAL_DAYS - 1);
-  const selectedWorkoutPlan = getWorkoutPlan(state.startDate, selectedDate);
+  const selectedWorkoutPlan = getWorkoutPlan(workoutPlans, state.startDate, selectedDate);
 
   function updateRecord(nextRecord: DayRecord) {
     setState((previous) => ({
@@ -429,6 +478,18 @@ export default function Home() {
     }));
 
     if (!isComplete(state.records[nextRecord.date]) && isComplete(nextRecord)) {
+      const dayNumber = diffDays(state.startDate, nextRecord.date);
+      const completedMilestones = JSON.parse(window.localStorage.getItem(MILESTONES_KEY) || "[]") as number[];
+      const milestone = MILESTONES.find(
+        (value) => value === dayNumber && !completedMilestones.includes(value),
+      );
+      if (milestone) {
+        completedMilestones.push(milestone);
+        window.localStorage.setItem(MILESTONES_KEY, JSON.stringify(completedMilestones));
+        setCelebrationTitle(`Day ${milestone} milestone`);
+      } else {
+        setCelebrationTitle("Complete");
+      }
       setCelebrationDay(nextRecord.date);
     }
   }
@@ -507,7 +568,7 @@ export default function Home() {
   }
 
   async function showWorkoutNotification(slot: "one" | "two") {
-    const plan = getWorkoutPlan(state.startDate, today);
+    const plan = getWorkoutPlan(workoutPlans, state.startDate, today);
     const isFirstWorkout = slot === "one";
     const title = isFirstWorkout ? `Workout 1: ${plan.title}` : `Outdoor workout: ${plan.title}`;
     const body = summarizeWorkout(isFirstWorkout ? plan.workoutOne : plan.workoutTwo);
@@ -536,6 +597,51 @@ export default function Home() {
     if (permission === "granted") {
       setReminders((current) => ({ ...current, enabled: true }));
       await showWaterNotification();
+    }
+  }
+
+  async function enableServerPush() {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setServerPushStatus("This browser does not support server reminders");
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    if (permission !== "granted") {
+      setServerPushStatus("Notification permission was not granted");
+      return;
+    }
+
+    try {
+      const keyResponse = await fetch("/api/push/vapid-public-key");
+      const keyData = (await keyResponse.json()) as { publicKey?: string };
+      if (!keyResponse.ok || !keyData.publicKey) throw new Error("Push service is not configured");
+      const registration = await navigator.serviceWorker.ready;
+      const subscription =
+        (await registration.pushManager.getSubscription()) ||
+        (await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: base64ToBytes(keyData.publicKey),
+        }));
+      const response = await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subscription: subscription.toJSON(),
+          reminders,
+          workoutReminders,
+          workoutPlans,
+          startDate: state.startDate,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          records: { [today]: state.records[today] },
+        }),
+      });
+      if (!response.ok) throw new Error("Subscription could not be saved");
+      window.localStorage.setItem(PUSH_SUBSCRIPTION_KEY, "true");
+      setServerPushStatus("Connected to server reminders");
+    } catch {
+      setServerPushStatus("Server reminders need Railway push settings");
     }
   }
 
@@ -627,7 +733,7 @@ export default function Home() {
           <div className="celebration-burst" />
           <div className="celebration-card">
             <span className="celebration-kicker">Day locked in</span>
-            <strong>Complete</strong>
+            <strong>{celebrationTitle}</strong>
             <small>{celebrationDay}</small>
           </div>
           {CELEBRATION_BITS.map((bit) => (
@@ -974,9 +1080,18 @@ export default function Home() {
                   Send test
                 </button>
 
+                <button
+                  className="h-11 rounded-md bg-[#2f6f66] px-4 text-sm font-bold text-white"
+                  onClick={() => void enableServerPush()}
+                  type="button"
+                >
+                  Connect server reminders
+                </button>
+
                 <p className="text-xs font-semibold text-[#625746]">
                   Status: {notificationPermission}
                 </p>
+                <p className="text-xs font-semibold text-[#625746]">{serverPushStatus}</p>
               </div>
             </div>
 
@@ -1048,8 +1163,142 @@ export default function Home() {
                 </button>
 
                 <div className="rounded-md border border-[#d8d0c2] bg-white p-3 text-sm text-[#625746]">
-                  <strong className="text-[#171512]">Today:</strong> {getWorkoutPlan(state.startDate, today).title}
+                  <strong className="text-[#171512]">Today:</strong> {getWorkoutPlan(workoutPlans, state.startDate, today).title}
                 </div>
+              </div>
+            </div>
+
+            <div className="settings-panel settings-panel-wide">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2>Custom Workout Rotation</h2>
+                  <p>Edit the seven-day rotation. Changes apply to future reminders and the workout guide.</p>
+                </div>
+                <button
+                  className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm font-bold"
+                  onClick={() => setWorkoutPlans(WORKOUT_ROTATION)}
+                  type="button"
+                >
+                  Reset defaults
+                </button>
+              </div>
+
+              <div className="workout-editor mt-5">
+                {workoutPlans.map((plan, planIndex) => (
+                  <fieldset className="workout-editor-day" key={`editor-${planIndex}`}>
+                    <legend>Day {planIndex + 1}</legend>
+                    <input
+                      aria-label={`Day ${planIndex + 1} workout title`}
+                      className="h-10 w-full rounded-md border border-[#c9beac] bg-white px-3 text-sm font-bold"
+                      onChange={(event) =>
+                        setWorkoutPlans((current) =>
+                          current.map((item, index) =>
+                            index === planIndex ? { ...item, title: event.target.value } : item,
+                          ),
+                        )
+                      }
+                      value={plan.title}
+                    />
+                    <div className="workout-editor-column">
+                      <h3>Workout 1</h3>
+                      {plan.workoutOne.map((move, moveIndex) => (
+                        <div className="workout-editor-move" key={`one-${moveIndex}`}>
+                          <input
+                            aria-label={`Day ${planIndex + 1} workout 1 movement ${moveIndex + 1}`}
+                            className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                            onChange={(event) =>
+                              setWorkoutPlans((current) =>
+                                current.map((item, index) =>
+                                  index === planIndex
+                                    ? {
+                                        ...item,
+                                        workoutOne: item.workoutOne.map((entry, entryIndex) =>
+                                          entryIndex === moveIndex
+                                            ? { ...entry, name: event.target.value }
+                                            : entry,
+                                        ),
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                            value={move.name}
+                          />
+                          <input
+                            aria-label={`Day ${planIndex + 1} workout 1 prescription ${moveIndex + 1}`}
+                            className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                            onChange={(event) =>
+                              setWorkoutPlans((current) =>
+                                current.map((item, index) =>
+                                  index === planIndex
+                                    ? {
+                                        ...item,
+                                        workoutOne: item.workoutOne.map((entry, entryIndex) =>
+                                          entryIndex === moveIndex
+                                            ? { ...entry, prescription: event.target.value }
+                                            : entry,
+                                        ),
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                            value={move.prescription}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="workout-editor-column">
+                      <h3>Outdoor workout</h3>
+                      {plan.workoutTwo.map((move, moveIndex) => (
+                        <div className="workout-editor-move" key={`two-${moveIndex}`}>
+                          <input
+                            aria-label={`Day ${planIndex + 1} outdoor movement ${moveIndex + 1}`}
+                            className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                            onChange={(event) =>
+                              setWorkoutPlans((current) =>
+                                current.map((item, index) =>
+                                  index === planIndex
+                                    ? {
+                                        ...item,
+                                        workoutTwo: item.workoutTwo.map((entry, entryIndex) =>
+                                          entryIndex === moveIndex
+                                            ? { ...entry, name: event.target.value }
+                                            : entry,
+                                        ),
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                            value={move.name}
+                          />
+                          <input
+                            aria-label={`Day ${planIndex + 1} outdoor prescription ${moveIndex + 1}`}
+                            className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                            onChange={(event) =>
+                              setWorkoutPlans((current) =>
+                                current.map((item, index) =>
+                                  index === planIndex
+                                    ? {
+                                        ...item,
+                                        workoutTwo: item.workoutTwo.map((entry, entryIndex) =>
+                                          entryIndex === moveIndex
+                                            ? { ...entry, prescription: event.target.value }
+                                            : entry,
+                                        ),
+                                      }
+                                    : item,
+                                ),
+                              )
+                            }
+                            value={move.prescription}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </fieldset>
+                ))}
               </div>
             </div>
           </section>
