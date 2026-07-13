@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f2eb;
-  --foreground: #171512;
+  --background: #0b0d0e;
+  --foreground: #f1f4f0;
 }
 
 @theme inline {
@@ -25,6 +25,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 0.01em;
 }
 
 button,
@@ -43,11 +44,11 @@ button {
   left: 50%;
   z-index: 60;
   min-width: 148px;
-  border: 1px solid #d8d0c2;
+  border: 1px solid #3a4340;
   border-radius: 999px;
-  background: #fffaf0;
+  background: #171b1c;
   box-shadow: 0 10px 30px rgb(23 21 18 / 0.14);
-  color: #625746;
+  color: #b7c0b9;
   padding: 9px 14px;
   text-align: center;
   font-size: 0.8rem;
@@ -65,8 +66,8 @@ button {
 }
 
 .pull-refresh-ready {
-  background: #171512;
-  color: #ffffff;
+  background: #b8f23d;
+  color: #0b0d0e;
 }
 
 .celebration {
@@ -84,8 +85,8 @@ button {
   inset: 0;
   content: "";
   background:
-    radial-gradient(circle at 50% 42%, rgb(217 164 65 / 0.28), transparent 28%),
-    rgb(23 21 18 / 0.12);
+    radial-gradient(circle at 50% 42%, rgb(184 242 61 / 0.26), transparent 28%),
+    rgb(0 0 0 / 0.68);
   animation: celebration-fade 2.2s ease both;
 }
 
@@ -93,7 +94,7 @@ button {
   position: absolute;
   width: min(72vw, 420px);
   aspect-ratio: 1;
-  border: 2px solid rgb(47 111 102 / 0.45);
+  border: 2px solid rgb(184 242 61 / 0.5);
   border-radius: 999px;
   animation: celebration-ring 1.3s ease-out both;
 }
@@ -105,16 +106,16 @@ button {
   min-width: min(82vw, 320px);
   gap: 4px;
   justify-items: center;
-  border: 1px solid #d9a441;
+  border: 1px solid #b8f23d;
   border-radius: 8px;
-  background: #fffaf0;
+  background: #171b1c;
   padding: 22px 28px;
   box-shadow: 0 24px 80px rgb(23 21 18 / 0.24);
   animation: celebration-card 1.7s cubic-bezier(0.2, 0.9, 0.25, 1) both;
 }
 
 .celebration-card strong {
-  color: #171512;
+  color: #f1f4f0;
   font-size: clamp(2.6rem, 12vw, 4.8rem);
   font-weight: 950;
   line-height: 0.92;
@@ -122,7 +123,7 @@ button {
 
 .celebration-card small,
 .celebration-kicker {
-  color: #625746;
+  color: #b7c0b9;
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -145,24 +146,24 @@ button {
   width: 10px;
   height: 18px;
   border-radius: 3px;
-  background: #d9a441;
+  background: #ff7a1a;
   transform: rotate(var(--angle)) translateY(0);
   animation: celebration-bit 1.45s ease-out var(--delay) both;
 }
 
 .celebration-bit:nth-child(3n) {
-  background: #2f6f66;
+  background: #b8f23d;
 }
 
 .celebration-bit:nth-child(4n) {
-  background: #b94b3d;
+  background: #ff3b30;
 }
 
 .celebration-bit:nth-child(5n) {
   width: 14px;
   height: 14px;
   border-radius: 999px;
-  background: #171512;
+  background: #f1f4f0;
 }
 
 .sr-only {
@@ -177,9 +178,9 @@ button {
 }
 
 .stat {
-  border: 1px solid #d8d0c2;
+  border: 1px solid #303837;
   border-radius: 8px;
-  background: #fffaf0;
+  background: #171b1c;
   padding: 12px 8px;
 }
 
@@ -193,7 +194,7 @@ button {
 .stat small {
   margin-top: 6px;
   display: block;
-  color: #625746;
+  color: #8f9b92;
   font-size: 0.75rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -203,9 +204,9 @@ button {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px;
-  border: 1px solid #d8d0c2;
+  border: 1px solid #303837;
   border-radius: 8px;
-  background: #fffaf0;
+  background: #171b1c;
   padding: 4px;
 }
 
@@ -214,14 +215,14 @@ button {
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #625746;
+  color: #aeb9b1;
   font-size: 0.9rem;
   font-weight: 900;
 }
 
 .view-switch .view-switch-active {
-  background: #171512;
-  color: #ffffff;
+  background: #b8f23d;
+  color: #0b0d0e;
 }
 
 .settings-grid {
@@ -230,9 +231,9 @@ button {
 }
 
 .settings-panel {
-  border: 1px solid #d8d0c2;
+  border: 1px solid #303837;
   border-radius: 8px;
-  background: #fffaf0;
+  background: #171b1c;
   padding: 20px;
   box-shadow: 0 1px 2px rgb(23 21 18 / 0.06);
 }
@@ -244,7 +245,7 @@ button {
 
 .settings-panel p {
   margin-top: 4px;
-  color: #625746;
+  color: #9eaaa2;
   font-size: 0.95rem;
 }
 
@@ -260,15 +261,15 @@ button {
 .workout-editor-day {
   display: grid;
   gap: 12px;
-  border: 1px solid #d8d0c2;
+  border: 1px solid #303837;
   border-radius: 8px;
-  background: #ffffff;
+  background: #101314;
   padding: 14px;
 }
 
 .workout-editor-day legend {
   padding: 0 6px;
-  color: #171512;
+  color: #b8f23d;
   font-size: 0.95rem;
   font-weight: 900;
 }
@@ -279,7 +280,7 @@ button {
 }
 
 .workout-editor-column h3 {
-  color: #625746;
+  color: #9eaaa2;
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -297,9 +298,9 @@ button {
   align-items: center;
   min-height: 72px;
   cursor: pointer;
-  border: 1px solid #d8d0c2;
+  border: 1px solid #303837;
   border-radius: 8px;
-  background: #ffffff;
+  background: #171b1c;
   padding: 10px 14px 10px 10px;
   transition:
     border-color 160ms ease,
@@ -314,7 +315,7 @@ button {
 .task-row input {
   width: 28px;
   height: 28px;
-  accent-color: #2f6f66;
+  accent-color: #b8f23d;
 }
 
 .photo-check {
@@ -322,21 +323,21 @@ button {
   width: 28px;
   height: 28px;
   place-items: center;
-  border: 2px solid #94846e;
+  border: 2px solid #66736a;
   border-radius: 6px;
-  background: #ffffff;
+  background: #101314;
 }
 
 .photo-check-complete {
-  border-color: #2f6f66;
-  background: #2f6f66;
+  border-color: #b8f23d;
+  background: #b8f23d;
 }
 
 .photo-check-complete::after {
   width: 8px;
   height: 14px;
   content: "";
-  border: solid #ffffff;
+  border: solid #0b0d0e;
   border-width: 0 3px 3px 0;
   transform: rotate(45deg) translateY(-1px);
 }
@@ -352,13 +353,13 @@ button {
 
 .task-row small {
   margin-top: 3px;
-  color: #625746;
+  color: #9eaaa2;
   font-size: 0.86rem;
 }
 
 .task-row-complete {
-  border-color: #69a87f;
-  background: #eef8ef;
+  border-color: #83b62d;
+  background: #1b2914;
 }
 
 .photo-save-panel {
@@ -367,9 +368,9 @@ button {
   gap: 12px;
   align-items: center;
   margin-top: 14px;
-  border: 1px solid #d8d0c2;
+  border: 1px solid #303837;
   border-radius: 8px;
-  background: #ffffff;
+  background: #171b1c;
   padding: 12px;
 }
 
@@ -387,7 +388,7 @@ button {
 
 .photo-save-panel p {
   margin-top: 2px;
-  color: #625746;
+  color: #9eaaa2;
   font-size: 0.82rem;
 }
 
@@ -396,8 +397,8 @@ button {
   min-height: 38px;
   border: 0;
   border-radius: 6px;
-  background: #171512;
-  color: #ffffff;
+  background: #b8f23d;
+  color: #0b0d0e;
   padding: 0 14px;
   font-size: 0.86rem;
   font-weight: 900;
@@ -410,7 +411,7 @@ button {
 }
 
 .workout-detail h3 {
-  color: #171512;
+  color: #b8f23d;
   font-size: 0.9rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -427,29 +428,29 @@ button {
 .workout-detail li {
   display: grid;
   gap: 2px;
-  border-left: 3px solid #d9a441;
-  background: #ffffff;
+  border-left: 3px solid #ff7a1a;
+  background: #101314;
   padding: 8px 10px;
 }
 
 .workout-detail li span {
-  color: #171512;
+  color: #f1f4f0;
   font-size: 0.9rem;
   font-weight: 800;
 }
 
 .workout-detail li strong {
-  color: #625746;
+  color: #9eaaa2;
   font-size: 0.82rem;
 }
 
 .day-cell {
   aspect-ratio: 1;
   min-width: 0;
-  border: 1px solid #d8d0c2;
+  border: 1px solid #303837;
   border-radius: 7px;
-  background: #fffaf0;
-  color: #171512;
+  background: #171b1c;
+  color: #f1f4f0;
   font-size: 0.8rem;
   font-weight: 900;
 }
@@ -461,19 +462,19 @@ button {
 }
 
 .day-cell-complete {
-  border-color: #2f6f66;
-  background: #2f6f66;
-  color: white;
+  border-color: #b8f23d;
+  background: #b8f23d;
+  color: #0b0d0e;
 }
 
 .day-cell-selected {
-  outline: 3px solid #d9a441;
+  outline: 3px solid #ff7a1a;
   outline-offset: 2px;
 }
 
 .day-cell-missed {
-  border-color: #c97d71;
-  background: #fff0ed;
+  border-color: #ff3b30;
+  background: #351717;
 }
 
 @keyframes celebration-fade {

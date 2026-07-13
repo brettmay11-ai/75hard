@@ -715,7 +715,7 @@ export default function Home() {
 
   return (
     <main
-      className="min-h-screen bg-[#f5f2eb] text-[#171512]"
+      className="min-h-screen bg-[#0b0d0e] text-[#f1f4f0]"
       onTouchCancel={handleRefreshEnd}
       onTouchEnd={handleRefreshEnd}
       onTouchMove={handleRefreshMove}
@@ -742,13 +742,13 @@ export default function Home() {
         </div>
       )}
       <section className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8">
-        <header className="grid gap-4 border-b border-[#d8d0c2] pb-5 lg:grid-cols-[1fr_auto] lg:items-end">
+        <header className="grid gap-4 border-b border-[#303837] pb-5 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#7c6b55]">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#b8f23d]">
               Personal 75 Hard
             </p>
             <h1 className="mt-2 text-4xl font-black leading-none sm:text-6xl">Day {currentDay}</h1>
-            <p className="mt-3 max-w-2xl text-base text-[#625746] sm:text-lg">
+            <p className="mt-3 max-w-2xl text-base text-[#9eaaa2] sm:text-lg">
               Track the six daily promises, keep the streak honest, and see the full 75-day board at a glance.
             </p>
           </div>
@@ -791,17 +791,17 @@ export default function Home() {
         {activeView === "dashboard" ? (
           <>
         <div className="grid flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <section className="rounded-lg border border-[#d8d0c2] bg-[#fffaf0] p-4 shadow-sm sm:p-5">
+          <section className="rounded-lg border border-[#303837] bg-[#171b1c] p-4 shadow-sm sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-xl font-bold">Today&apos;s Commitments</h2>
-                <p className="text-sm text-[#625746]">
+                <p className="text-sm text-[#9eaaa2]">
                   {selectedDate} · Day {selectedDay > 0 ? selectedDay : 1} of {TOTAL_DAYS}
                 </p>
               </div>
               <input
                 aria-label="Choose day"
-                className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm font-semibold"
+                className="h-11 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm font-semibold text-[#0b0d0e]"
                 max={finishDate}
                 min={state.startDate}
                 onChange={(event) => setSelectedDate(event.target.value)}
@@ -883,12 +883,12 @@ export default function Home() {
               </div>
             )}
 
-            <div className="mt-5 rounded-lg border border-[#d8d0c2] bg-white p-4">
+            <div className="mt-5 rounded-lg border border-[#303837] bg-[#101314] p-4">
               <label className="text-sm font-bold" htmlFor="note">
                 Day note
               </label>
               <textarea
-                className="mt-2 min-h-24 w-full resize-y rounded-md border border-[#c9beac] bg-[#fffdf8] p-3 text-sm outline-none focus:border-[#2f6f66]"
+                className="mt-2 min-h-24 w-full resize-y rounded-md border border-[#4a5650] bg-[#171b1c] p-3 text-sm outline-none focus:border-[#b8f23d]"
                 id="note"
                 onChange={(event) => updateRecord({ ...selectedRecord, note: event.target.value })}
                 placeholder="Energy, meals, workouts, wins, lessons..."
@@ -898,25 +898,25 @@ export default function Home() {
           </section>
 
           <aside className="flex flex-col gap-5">
-            <section className="rounded-lg border border-[#d8d0c2] bg-[#171512] p-5 text-white shadow-sm">
+            <section className="rounded-lg border border-[#303837] bg-[#101314] p-5 text-white shadow-sm">
               <h2 className="text-xl font-bold">Daily Score</h2>
               <div className="mt-5 flex items-end gap-2">
                 <span className="text-6xl font-black">{selectedCompleted}</span>
-                <span className="pb-2 text-lg text-[#d4c8b8]">/ {TASKS.length}</span>
+                <span className="pb-2 text-lg text-[#9eaaa2]">/ {TASKS.length}</span>
               </div>
-              <div className="mt-5 h-3 overflow-hidden rounded-full bg-[#40382e]">
+              <div className="mt-5 h-3 overflow-hidden rounded-full bg-[#303837]">
                 <div
-                  className="h-full rounded-full bg-[#59b88d]"
+                  className="h-full rounded-full bg-[#b8f23d]"
                   style={{ width: `${(selectedCompleted / TASKS.length) * 100}%` }}
                 />
               </div>
-              <p className="mt-4 text-sm text-[#d4c8b8]">
+              <p className="mt-4 text-sm text-[#9eaaa2]">
                 Finish date: <strong className="text-white">{finishDate}</strong>
               </p>
             </section>
 
-            <section className="rounded-lg border border-[#d8d0c2] bg-[#fffaf0] p-5 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#7c6b55]">
+            <section className="rounded-lg border border-[#303837] bg-[#171b1c] p-5 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#b8f23d]">
                 Workout Focus
               </p>
               <h2 className="mt-2 text-2xl font-black">{selectedWorkoutPlan.title}</h2>
@@ -949,13 +949,13 @@ export default function Home() {
           </aside>
         </div>
 
-        <section className="rounded-lg border border-[#d8d0c2] bg-white p-4 shadow-sm sm:p-5">
+        <section className="rounded-lg border border-[#303837] bg-[#171b1c] p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-xl font-bold">75-Day Board</h2>
-              <p className="text-sm text-[#625746]">Tap any square to review or update that day.</p>
+              <p className="text-sm text-[#9eaaa2]">Tap any square to review or update that day.</p>
             </div>
-            <p className="text-sm font-bold text-[#2f6f66]">{completedDays} complete</p>
+            <p className="text-sm font-bold text-[#b8f23d]">{completedDays} complete</p>
           </div>
           <div className="board-grid mt-4">
             {Array.from({ length: TOTAL_DAYS }, (_, index) => {
@@ -988,7 +988,7 @@ export default function Home() {
                 Start date
               </label>
               <input
-                className="mt-2 h-11 w-full rounded-md border border-[#c9beac] bg-white px-3 text-sm font-semibold"
+                className="mt-2 h-11 w-full rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm font-semibold text-[#0b0d0e]"
                 id="start-date"
                 onChange={(event) => updateStartDate(event.target.value)}
                 type="date"
@@ -996,7 +996,7 @@ export default function Home() {
               />
 
               <button
-                className="mt-4 h-11 w-full rounded-md bg-[#b94b3d] px-4 text-sm font-bold text-white"
+                className="mt-4 h-11 w-full rounded-md bg-[#ff3b30] px-4 text-sm font-bold text-white"
                 onClick={resetTracker}
                 type="button"
               >
@@ -1011,7 +1011,7 @@ export default function Home() {
               <div className="mt-5 grid gap-3">
                 <button
                   className={`h-11 rounded-md px-4 text-sm font-bold text-white ${
-                    reminders.enabled ? "bg-[#2f6f66]" : "bg-[#171512]"
+                    reminders.enabled ? "bg-[#b8f23d] text-[#0b0d0e]" : "bg-[#303837]"
                   }`}
                   onClick={() => {
                     if (notificationPermission === "granted") {
@@ -1028,7 +1028,7 @@ export default function Home() {
                 <label className="grid gap-2 text-sm font-bold" htmlFor="interval">
                   Remind every
                   <select
-                    className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                    className="h-11 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm text-[#0b0d0e]"
                     id="interval"
                     onChange={(event) =>
                       setReminders((current) => ({
@@ -1049,7 +1049,7 @@ export default function Home() {
                   <label className="grid gap-2 text-sm font-bold" htmlFor="start-time">
                     Start
                     <input
-                      className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                      className="h-11 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm text-[#0b0d0e]"
                       id="start-time"
                       onChange={(event) =>
                         setReminders((current) => ({ ...current, startTime: event.target.value }))
@@ -1061,7 +1061,7 @@ export default function Home() {
                   <label className="grid gap-2 text-sm font-bold" htmlFor="end-time">
                     End
                     <input
-                      className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                      className="h-11 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm text-[#0b0d0e]"
                       id="end-time"
                       onChange={(event) =>
                         setReminders((current) => ({ ...current, endTime: event.target.value }))
@@ -1073,7 +1073,7 @@ export default function Home() {
                 </div>
 
                 <button
-                  className="h-11 rounded-md border border-[#c9beac] bg-white px-4 text-sm font-bold"
+                  className="h-11 rounded-md border border-[#4a5650] bg-[#101314] px-4 text-sm font-bold"
                   onClick={() => void testReminder()}
                   type="button"
                 >
@@ -1081,17 +1081,17 @@ export default function Home() {
                 </button>
 
                 <button
-                  className="h-11 rounded-md bg-[#2f6f66] px-4 text-sm font-bold text-white"
+                  className="h-11 rounded-md bg-[#b8f23d] px-4 text-sm font-bold text-[#0b0d0e]"
                   onClick={() => void enableServerPush()}
                   type="button"
                 >
                   Connect server reminders
                 </button>
 
-                <p className="text-xs font-semibold text-[#625746]">
+                <p className="text-xs font-semibold text-[#9eaaa2]">
                   Status: {notificationPermission}
                 </p>
-                <p className="text-xs font-semibold text-[#625746]">{serverPushStatus}</p>
+                <p className="text-xs font-semibold text-[#9eaaa2]">{serverPushStatus}</p>
               </div>
             </div>
 
@@ -1104,7 +1104,7 @@ export default function Home() {
               <div className="mt-5 grid gap-3">
                 <button
                   className={`h-11 rounded-md px-4 text-sm font-bold text-white ${
-                    workoutReminders.enabled ? "bg-[#2f6f66]" : "bg-[#171512]"
+                    workoutReminders.enabled ? "bg-[#b8f23d] text-[#0b0d0e]" : "bg-[#303837]"
                   }`}
                   onClick={() => {
                     if (notificationPermission === "granted") {
@@ -1125,7 +1125,7 @@ export default function Home() {
                   <label className="grid gap-2 text-sm font-bold" htmlFor="workout-one-time">
                     Workout 1
                     <input
-                      className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                      className="h-11 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm text-[#0b0d0e]"
                       id="workout-one-time"
                       onChange={(event) =>
                         setWorkoutReminders((current) => ({
@@ -1140,7 +1140,7 @@ export default function Home() {
                   <label className="grid gap-2 text-sm font-bold" htmlFor="workout-two-time">
                     Outdoor
                     <input
-                      className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                      className="h-11 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm text-[#0b0d0e]"
                       id="workout-two-time"
                       onChange={(event) =>
                         setWorkoutReminders((current) => ({
@@ -1155,15 +1155,15 @@ export default function Home() {
                 </div>
 
                 <button
-                  className="h-11 rounded-md border border-[#c9beac] bg-white px-4 text-sm font-bold"
+                  className="h-11 rounded-md border border-[#4a5650] bg-[#101314] px-4 text-sm font-bold"
                   onClick={() => void testWorkoutReminder()}
                   type="button"
                 >
                   Send workout test
                 </button>
 
-                <div className="rounded-md border border-[#d8d0c2] bg-white p-3 text-sm text-[#625746]">
-                  <strong className="text-[#171512]">Today:</strong> {getWorkoutPlan(workoutPlans, state.startDate, today).title}
+                <div className="rounded-md border border-[#303837] bg-[#101314] p-3 text-sm text-[#9eaaa2]">
+                  <strong className="text-[#f1f4f0]">Today:</strong> {getWorkoutPlan(workoutPlans, state.startDate, today).title}
                 </div>
               </div>
             </div>
@@ -1175,7 +1175,7 @@ export default function Home() {
                   <p>Edit the seven-day rotation. Changes apply to future reminders and the workout guide.</p>
                 </div>
                 <button
-                  className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm font-bold"
+                  className="h-10 rounded-md border border-[#4a5650] bg-[#101314] px-3 text-sm font-bold"
                   onClick={() => setWorkoutPlans(WORKOUT_ROTATION)}
                   type="button"
                 >
@@ -1189,7 +1189,7 @@ export default function Home() {
                     <legend>Day {planIndex + 1}</legend>
                     <input
                       aria-label={`Day ${planIndex + 1} workout title`}
-                      className="h-10 w-full rounded-md border border-[#c9beac] bg-white px-3 text-sm font-bold"
+                      className="h-10 w-full rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm font-bold text-[#0b0d0e]"
                       onChange={(event) =>
                         setWorkoutPlans((current) =>
                           current.map((item, index) =>
@@ -1205,7 +1205,7 @@ export default function Home() {
                         <div className="workout-editor-move" key={`one-${moveIndex}`}>
                           <input
                             aria-label={`Day ${planIndex + 1} workout 1 movement ${moveIndex + 1}`}
-                            className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                            className="h-10 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm text-[#0b0d0e]"
                             onChange={(event) =>
                               setWorkoutPlans((current) =>
                                 current.map((item, index) =>
@@ -1226,7 +1226,7 @@ export default function Home() {
                           />
                           <input
                             aria-label={`Day ${planIndex + 1} workout 1 prescription ${moveIndex + 1}`}
-                            className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                            className="h-10 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm text-[#0b0d0e]"
                             onChange={(event) =>
                               setWorkoutPlans((current) =>
                                 current.map((item, index) =>
@@ -1254,7 +1254,7 @@ export default function Home() {
                         <div className="workout-editor-move" key={`two-${moveIndex}`}>
                           <input
                             aria-label={`Day ${planIndex + 1} outdoor movement ${moveIndex + 1}`}
-                            className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                            className="h-10 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm text-[#0b0d0e]"
                             onChange={(event) =>
                               setWorkoutPlans((current) =>
                                 current.map((item, index) =>
@@ -1275,7 +1275,7 @@ export default function Home() {
                           />
                           <input
                             aria-label={`Day ${planIndex + 1} outdoor prescription ${moveIndex + 1}`}
-                            className="h-10 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                            className="h-10 rounded-md border border-[#4a5650] bg-[#f1f4f0] px-3 text-sm text-[#0b0d0e]"
                             onChange={(event) =>
                               setWorkoutPlans((current) =>
                                 current.map((item, index) =>
