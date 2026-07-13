@@ -253,7 +253,8 @@ function summarizeWorkout(moves: WorkoutMove[]) {
 function base64ToBytes(value: string) {
   const padding = "=".repeat((4 - (value.length % 4)) % 4);
   const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
-  return Uint8Array.from(window.atob(base64), (character) => character.charCodeAt(0));
+  const bytes = Uint8Array.from(window.atob(base64), (character) => character.charCodeAt(0));
+  return bytes.buffer;
 }
 
 export default function Home() {
