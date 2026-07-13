@@ -637,11 +637,15 @@ export default function Home() {
           records: { [today]: state.records[today] },
         }),
       });
-      if (!response.ok) throw new Error("Subscription could not be saved");
+      if (!response.ok) {
+        const detail = await response.text();
+        throw new Error(`Subscription save failed (${response.status}): ${detail.slice(0, 120)}`);
+      }
       window.localStorage.setItem(PUSH_SUBSCRIPTION_KEY, "true");
       setServerPushStatus("Connected to server reminders");
-    } catch {
-      setServerPushStatus("Server reminders need Railway push settings");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown push setup error";
+      setServerPushStatus(message);
     }
   }
 
