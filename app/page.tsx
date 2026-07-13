@@ -25,6 +25,12 @@ type ReminderSettings = {
   endTime: string;
 };
 
+type WorkoutReminderSettings = {
+  enabled: boolean;
+  workoutOneTime: string;
+  workoutTwoTime: string;
+};
+
 type AppView = "dashboard" | "settings";
 
 const TASKS = [
@@ -38,7 +44,9 @@ const TASKS = [
 
 const STORAGE_KEY = "personal-75-hard-tracker";
 const REMINDER_KEY = "personal-75-hard-reminders";
+const WORKOUT_REMINDER_KEY = "personal-75-hard-workout-reminders";
 const LAST_WATER_REMINDER_KEY = "personal-75-hard-last-water-reminder";
+const LAST_WORKOUT_REMINDER_KEY = "personal-75-hard-last-workout-reminder";
 const TOTAL_DAYS = 75;
 const DEFAULT_REMINDERS: ReminderSettings = {
   enabled: false,
@@ -46,6 +54,48 @@ const DEFAULT_REMINDERS: ReminderSettings = {
   startTime: "08:00",
   endTime: "20:00",
 };
+const DEFAULT_WORKOUT_REMINDERS: WorkoutReminderSettings = {
+  enabled: false,
+  workoutOneTime: "07:00",
+  workoutTwoTime: "17:30",
+};
+const WORKOUT_ROTATION = [
+  {
+    title: "Push",
+    workoutOne: "Chest, shoulders, and triceps strength.",
+    workoutTwo: "Outdoor walk, ruck, or easy zone-2 cardio.",
+  },
+  {
+    title: "Pull",
+    workoutOne: "Back, biceps, rear delts, and grip strength.",
+    workoutTwo: "Outdoor walk, incline walk, or light jog.",
+  },
+  {
+    title: "Run",
+    workoutOne: "Easy run, intervals, or tempo work.",
+    workoutTwo: "Outdoor recovery walk or mobility walk.",
+  },
+  {
+    title: "Legs",
+    workoutOne: "Quads, hamstrings, glutes, and calves.",
+    workoutTwo: "Outdoor walk or easy bike if your legs need mercy.",
+  },
+  {
+    title: "Core",
+    workoutOne: "Core, carries, mobility, and stability work.",
+    workoutTwo: "Outdoor walk, hike, or easy jog.",
+  },
+  {
+    title: "Run",
+    workoutOne: "Steady outdoor run or run/walk intervals.",
+    workoutTwo: "Mobility, stretching, or a light recovery walk.",
+  },
+  {
+    title: "Full Body",
+    workoutOne: "Full-body circuit or upper/lower mix.",
+    workoutTwo: "Outdoor walk, hike, or relaxed cardio.",
+  },
+];
 const CELEBRATION_BITS = Array.from({ length: 24 }, (_, index) => index);
 
 function toDateInput(date: Date) {
@@ -98,6 +148,17 @@ function isWithinReminderWindow(settings: ReminderSettings, date: Date) {
   return now >= start || now <= end;
 }
 
+function isWorkoutReminderDue(time: string, date: Date) {
+  const now = date.getHours() * 60 + date.getMinutes();
+  const scheduled = timeToMinutes(time);
+  return now >= scheduled && now < scheduled + 60;
+}
+
+function getWorkoutPlan(startDate: string, dateString: string) {
+  const dayIndex = Math.max(diffDays(startDate, dateString) - 1, 0);
+  return WORKOUT_ROTATION[dayIndex % WORKOUT_ROTATION.length];
+}
+
 export default function Home() {
   const today = toDateInput(new Date());
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -108,6 +169,8 @@ export default function Home() {
   const [selectedDate, setSelectedDate] = useState(today);
   const [loaded, setLoaded] = useState(false);
   const [reminders, setReminders] = useState<ReminderSettings>(DEFAULT_REMINDERS);
+  const [workoutReminders, setWorkoutReminders] =
+    useState<WorkoutReminderSettings>(DEFAULT_WORKOUT_REMINDERS);
   const [notificationPermission, setNotificationPermission] =
     useState<NotificationPermission>("default");
   const [celebrationDay, setCelebrationDay] = useState<string | null>(null);
@@ -134,6 +197,18 @@ export default function Home() {
       }
     }
 
+    const savedWorkoutReminders = window.localStorage.getItem(WORKOUT_REMINDER_KEY);
+    if (savedWorkoutReminders) {
+      try {
+        setWorkoutReminders({
+          ...DEFAULT_WORKOUT_REMINDERS,
+          ...JSON.parse(savedWorkoutReminders),
+        });
+      } catch {
+        window.localStorage.removeItem(WORKOUT_REMINDER_KEY);
+      }
+    }
+
     if ("Notification" in window) {
       setNotificationPermission(Notification.permission);
     }
@@ -149,8 +224,9 @@ export default function Home() {
     if (loaded) {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       window.localStorage.setItem(REMINDER_KEY, JSON.stringify(reminders));
+      window.localStorage.setItem(WORKOUT_REMINDER_KEY, JSON.stringify(workoutReminders));
     }
-  }, [loaded, reminders, state]);
+  }, [loaded, reminders, state, workoutReminders]);
 
   useEffect(() => {
     if (!loaded || !reminders.enabled || notificationPermission !== "granted") {
@@ -182,6 +258,46 @@ export default function Home() {
   }, [loaded, notificationPermission, reminders, state.records, today]);
 
   useEffect(() => {
+    if (!loaded || !workoutReminders.enabled || notificationPermission !== "granted") {
+      return;
+    }
+
+    const checkWorkoutReminders = () => {
+      const now = new Date();
+      const todayRecord = state.records[today];
+      const sentKey = `${today}:${workoutReminders.workoutOneTime}:${workoutReminders.workoutTwoTime}`;
+      const sent = JSON.parse(window.localStorage.getItem(LAST_WORKOUT_REMINDER_KEY) || "{}") as Record<
+        string,
+        boolean
+      >;
+
+      if (
+        !todayRecord?.workoutIndoor &&
+        !sent[`${sentKey}:one`] &&
+        isWorkoutReminderDue(workoutReminders.workoutOneTime, now)
+      ) {
+        sent[`${sentKey}:one`] = true;
+        window.localStorage.setItem(LAST_WORKOUT_REMINDER_KEY, JSON.stringify(sent));
+        void showWorkoutNotification("one");
+      }
+
+      if (
+        !todayRecord?.workoutOutdoor &&
+        !sent[`${sentKey}:two`] &&
+        isWorkoutReminderDue(workoutReminders.workoutTwoTime, now)
+      ) {
+        sent[`${sentKey}:two`] = true;
+        window.localStorage.setItem(LAST_WORKOUT_REMINDER_KEY, JSON.stringify(sent));
+        void showWorkoutNotification("two");
+      }
+    };
+
+    checkWorkoutReminders();
+    const timer = window.setInterval(checkWorkoutReminders, 60000);
+    return () => window.clearInterval(timer);
+  }, [loaded, notificationPermission, state.records, today, workoutReminders]);
+
+  useEffect(() => {
     if (!celebrationDay) {
       return;
     }
@@ -203,6 +319,7 @@ export default function Home() {
   const selectedCompleted = TASKS.filter((task) => selectedRecord[task.key]).length;
   const progress = Math.round((completedDays / TOTAL_DAYS) * 100);
   const finishDate = addDays(state.startDate, TOTAL_DAYS - 1);
+  const selectedWorkoutPlan = getWorkoutPlan(state.startDate, selectedDate);
 
   function updateRecord(nextRecord: DayRecord) {
     setState((previous) => ({
@@ -251,6 +368,26 @@ export default function Home() {
     new Notification(title, { body, tag: "water-reminder" });
   }
 
+  async function showWorkoutNotification(slot: "one" | "two") {
+    const plan = getWorkoutPlan(state.startDate, today);
+    const isFirstWorkout = slot === "one";
+    const title = isFirstWorkout ? `Workout 1: ${plan.title}` : `Outdoor workout: ${plan.title}`;
+    const body = isFirstWorkout ? plan.workoutOne : plan.workoutTwo;
+
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification(title, {
+        body,
+        badge: "/favicon.svg",
+        icon: "/favicon.svg",
+        tag: `workout-reminder-${slot}`,
+      });
+      return;
+    }
+
+    new Notification(title, { body, tag: `workout-reminder-${slot}` });
+  }
+
   async function enableReminders() {
     if (!("Notification" in window)) {
       return;
@@ -271,6 +408,28 @@ export default function Home() {
     }
 
     await enableReminders();
+  }
+
+  async function enableWorkoutReminders() {
+    if (!("Notification" in window)) {
+      return;
+    }
+
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    if (permission === "granted") {
+      setWorkoutReminders((current) => ({ ...current, enabled: true }));
+      await showWorkoutNotification("one");
+    }
+  }
+
+  async function testWorkoutReminder() {
+    if (notificationPermission === "granted") {
+      await showWorkoutNotification("one");
+      return;
+    }
+
+    await enableWorkoutReminders();
   }
 
   return (
@@ -448,6 +607,23 @@ export default function Home() {
               </p>
             </section>
 
+            <section className="rounded-lg border border-[#d8d0c2] bg-[#fffaf0] p-5 shadow-sm">
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[#7c6b55]">
+                Workout Focus
+              </p>
+              <h2 className="mt-2 text-2xl font-black">{selectedWorkoutPlan.title}</h2>
+              <div className="mt-4 grid gap-3 text-sm text-[#625746]">
+                <p>
+                  <strong className="text-[#171512]">Workout 1:</strong>{" "}
+                  {selectedWorkoutPlan.workoutOne}
+                </p>
+                <p>
+                  <strong className="text-[#171512]">Outdoor:</strong>{" "}
+                  {selectedWorkoutPlan.workoutTwo}
+                </p>
+              </div>
+            </section>
+
           </aside>
         </div>
 
@@ -585,6 +761,79 @@ export default function Home() {
                 <p className="text-xs font-semibold text-[#625746]">
                   Status: {notificationPermission}
                 </p>
+              </div>
+            </div>
+
+            <div className="settings-panel">
+              <h2>Workout Reminders</h2>
+              <p>
+                Uses a 7-day rotation: Push, Pull, Run, Legs, Core, Run, Full Body.
+              </p>
+
+              <div className="mt-5 grid gap-3">
+                <button
+                  className={`h-11 rounded-md px-4 text-sm font-bold text-white ${
+                    workoutReminders.enabled ? "bg-[#2f6f66]" : "bg-[#171512]"
+                  }`}
+                  onClick={() => {
+                    if (notificationPermission === "granted") {
+                      setWorkoutReminders((current) => ({
+                        ...current,
+                        enabled: !current.enabled,
+                      }));
+                    } else {
+                      void enableWorkoutReminders();
+                    }
+                  }}
+                  type="button"
+                >
+                  {workoutReminders.enabled ? "Workout reminders on" : "Enable workout reminders"}
+                </button>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="grid gap-2 text-sm font-bold" htmlFor="workout-one-time">
+                    Workout 1
+                    <input
+                      className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                      id="workout-one-time"
+                      onChange={(event) =>
+                        setWorkoutReminders((current) => ({
+                          ...current,
+                          workoutOneTime: event.target.value,
+                        }))
+                      }
+                      type="time"
+                      value={workoutReminders.workoutOneTime}
+                    />
+                  </label>
+                  <label className="grid gap-2 text-sm font-bold" htmlFor="workout-two-time">
+                    Outdoor
+                    <input
+                      className="h-11 rounded-md border border-[#c9beac] bg-white px-3 text-sm"
+                      id="workout-two-time"
+                      onChange={(event) =>
+                        setWorkoutReminders((current) => ({
+                          ...current,
+                          workoutTwoTime: event.target.value,
+                        }))
+                      }
+                      type="time"
+                      value={workoutReminders.workoutTwoTime}
+                    />
+                  </label>
+                </div>
+
+                <button
+                  className="h-11 rounded-md border border-[#c9beac] bg-white px-4 text-sm font-bold"
+                  onClick={() => void testWorkoutReminder()}
+                  type="button"
+                >
+                  Send workout test
+                </button>
+
+                <div className="rounded-md border border-[#d8d0c2] bg-white p-3 text-sm text-[#625746]">
+                  <strong className="text-[#171512]">Today:</strong> {getWorkoutPlan(state.startDate, today).title}
+                </div>
               </div>
             </div>
           </section>
