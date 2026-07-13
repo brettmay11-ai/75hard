@@ -37,6 +37,38 @@ button {
   touch-action: manipulation;
 }
 
+.pull-refresh {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  z-index: 60;
+  min-width: 148px;
+  border: 1px solid #d8d0c2;
+  border-radius: 999px;
+  background: #fffaf0;
+  box-shadow: 0 10px 30px rgb(23 21 18 / 0.14);
+  color: #625746;
+  padding: 9px 14px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    opacity 160ms ease;
+}
+
+.pull-refresh[aria-hidden="false"] {
+  opacity: 1;
+}
+
+.pull-refresh-ready {
+  background: #171512;
+  color: #ffffff;
+}
+
 .celebration {
   position: fixed;
   inset: 0;

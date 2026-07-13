@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, type TouchEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type DayRecord = {
   date: string;
@@ -168,6 +168,8 @@ function getWorkoutPlan(startDate: string, dateString: string) {
 export default function Home() {
   const today = toDateInput(new Date());
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const refreshStartYRef = useRef<number | null>(null);
+  const refreshDistanceRef = useRef(0);
   const [state, setState] = useState<TrackerState>({
     startDate: today,
     records: { [today]: createRecord(today) },
@@ -182,6 +184,8 @@ export default function Home() {
   const [celebrationDay, setCelebrationDay] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<AppView>("dashboard");
   const [selectedPhoto, setSelectedPhoto] = useState<SelectedPhoto | null>(null);
+  const [refreshDistance, setRefreshDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -487,8 +491,58 @@ export default function Home() {
     await enableWorkoutReminders();
   }
 
+  function handleRefreshStart(event: TouchEvent<HTMLElement>) {
+    if (window.scrollY <= 0) {
+      refreshStartYRef.current = event.touches[0].clientY;
+    }
+  }
+
+  function handleRefreshMove(event: TouchEvent<HTMLElement>) {
+    if (refreshStartYRef.current === null || isRefreshing) {
+      return;
+    }
+
+    const distance = event.touches[0].clientY - refreshStartYRef.current;
+
+    if (distance <= 0) {
+      refreshDistanceRef.current = 0;
+      setRefreshDistance(0);
+      return;
+    }
+
+    const nextDistance = Math.min(distance * 0.48, 96);
+    refreshDistanceRef.current = nextDistance;
+    setRefreshDistance(nextDistance);
+  }
+
+  function handleRefreshEnd() {
+    refreshStartYRef.current = null;
+
+    if (refreshDistanceRef.current >= 72) {
+      setIsRefreshing(true);
+      window.setTimeout(() => window.location.reload(), 180);
+      return;
+    }
+
+    refreshDistanceRef.current = 0;
+    setRefreshDistance(0);
+  }
+
   return (
-    <main className="min-h-screen bg-[#f5f2eb] text-[#171512]">
+    <main
+      className="min-h-screen bg-[#f5f2eb] text-[#171512]"
+      onTouchCancel={handleRefreshEnd}
+      onTouchEnd={handleRefreshEnd}
+      onTouchMove={handleRefreshMove}
+      onTouchStart={handleRefreshStart}
+    >
+      <div
+        aria-hidden={refreshDistance === 0 && !isRefreshing}
+        className={`pull-refresh ${refreshDistance >= 72 || isRefreshing ? "pull-refresh-ready" : ""}`}
+        style={{ transform: `translate(-50%, ${Math.max(refreshDistance - 64, -64)}px)` }}
+      >
+        {isRefreshing ? "Refreshing..." : refreshDistance >= 72 ? "Release to refresh" : "Pull to refresh"}
+      </div>
       {celebrationDay && (
         <div aria-live="polite" className="celebration" role="status">
           <div className="celebration-burst" />
