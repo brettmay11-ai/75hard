@@ -31,6 +31,12 @@ type WorkoutReminderSettings = {
   workoutTwoTime: string;
 };
 
+type SelectedPhoto = {
+  date: string;
+  file: File;
+  url: string;
+};
+
 type AppView = "dashboard" | "settings";
 
 const TASKS = [
@@ -175,6 +181,7 @@ export default function Home() {
     useState<NotificationPermission>("default");
   const [celebrationDay, setCelebrationDay] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<AppView>("dashboard");
+  const [selectedPhoto, setSelectedPhoto] = useState<SelectedPhoto | null>(null);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -306,6 +313,14 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [celebrationDay]);
 
+  useEffect(() => {
+    return () => {
+      if (selectedPhoto) {
+        URL.revokeObjectURL(selectedPhoto.url);
+      }
+    };
+  }, [selectedPhoto]);
+
   const currentDay = Math.min(Math.max(diffDays(state.startDate, today), 1), TOTAL_DAYS);
   const selectedDay = diffDays(state.startDate, selectedDate);
   const selectedRecord = state.records[selectedDate] ?? createRecord(selectedDate);
@@ -348,6 +363,46 @@ export default function Home() {
 
   function openPhotoCapture() {
     photoInputRef.current?.click();
+  }
+
+  function rememberPhoto(file: File) {
+    setSelectedPhoto((previous) => {
+      if (previous) {
+        URL.revokeObjectURL(previous.url);
+      }
+
+      return {
+        date: selectedDate,
+        file,
+        url: URL.createObjectURL(file),
+      };
+    });
+    updateRecord({ ...selectedRecord, photo: true });
+  }
+
+  async function saveSelectedPhoto() {
+    if (!selectedPhoto) {
+      return;
+    }
+
+    const filename = `75-hard-${selectedPhoto.date}.jpg`;
+    const shareData = {
+      files: [new File([selectedPhoto.file], filename, { type: selectedPhoto.file.type })],
+      title: "75 Hard Progress Photo",
+      text: `Progress photo for ${selectedPhoto.date}`,
+    };
+
+    if (navigator.canShare?.(shareData)) {
+      await navigator.share(shareData);
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = selectedPhoto.url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 
   async function showWaterNotification() {
@@ -565,8 +620,9 @@ export default function Home() {
                 capture="environment"
                 className="sr-only"
                 onChange={(event) => {
-                  if (event.target.files?.length) {
-                    updateRecord({ ...selectedRecord, photo: true });
+                  const file = event.target.files?.[0];
+                  if (file) {
+                    rememberPhoto(file);
                     event.target.value = "";
                   }
                 }}
@@ -574,6 +630,19 @@ export default function Home() {
                 type="file"
               />
             </div>
+
+            {selectedPhoto?.date === selectedDate && (
+              <div className="photo-save-panel">
+                <img alt="Selected progress preview" src={selectedPhoto.url} />
+                <div>
+                  <strong>Progress photo ready</strong>
+                  <p>Use your phone&apos;s save/share options to keep a copy outside the tracker.</p>
+                  <button onClick={() => void saveSelectedPhoto()} type="button">
+                    Save photo
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="mt-5 rounded-lg border border-[#d8d0c2] bg-white p-4">
               <label className="text-sm font-bold" htmlFor="note">

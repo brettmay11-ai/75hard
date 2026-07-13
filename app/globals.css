@@ -286,6 +286,48 @@ button {
   background: #eef8ef;
 }
 
+.photo-save-panel {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+  border: 1px solid #d8d0c2;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.photo-save-panel img {
+  width: 84px;
+  aspect-ratio: 1;
+  border-radius: 7px;
+  object-fit: cover;
+}
+
+.photo-save-panel strong {
+  display: block;
+  font-size: 0.98rem;
+}
+
+.photo-save-panel p {
+  margin-top: 2px;
+  color: #625746;
+  font-size: 0.82rem;
+}
+
+.photo-save-panel button {
+  margin-top: 8px;
+  min-height: 38px;
+  border: 0;
+  border-radius: 6px;
+  background: #171512;
+  color: #ffffff;
+  padding: 0 14px;
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
 .day-cell {
   aspect-ratio: 1;
   min-width: 0;
