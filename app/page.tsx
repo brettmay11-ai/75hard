@@ -735,7 +735,10 @@ export default function Home() {
       </div>
       {celebrationDay && (
         <div aria-live="polite" className="celebration" role="status">
+          <div className="celebration-flash" />
           <div className="celebration-burst" />
+          <div className="celebration-shockwave celebration-shockwave-one" />
+          <div className="celebration-shockwave celebration-shockwave-two" />
           <div className="celebration-card">
             <span className="celebration-kicker">Day locked in</span>
             <strong>{celebrationTitle}</strong>
