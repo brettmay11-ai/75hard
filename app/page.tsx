@@ -1,5 +1,6 @@
 "use client";
 
+import { Activity, ChartNoAxesColumn, Dumbbell, House, Pill, Settings, type LucideIcon } from "lucide-react";
 import { type TouchEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type WorkoutType = "none" | "strength" | "run" | "cycle" | "sport" | "mobility";
@@ -32,6 +33,7 @@ function prescription(entry: Entry, history: Entry[], oura: Oura | null, limit: 
 function workoutName(workout: OuraWorkout) { return String(workout.type || workout.activity || workout.name || workout.label || "Workout").replaceAll("_", " "); }
 function workoutDate(workout: OuraWorkout) { return String(workout.day || workout.start_datetime || workout.start_time || ""); }
 function workoutDuration(workout: OuraWorkout) { const seconds = Number(workout.duration || workout.duration_seconds); return Number.isFinite(seconds) && seconds > 0 ? `${Math.round(seconds / 60)} min` : "Duration unavailable"; }
+function tabIcon(id: Tab): LucideIcon { return id === "today" ? House : id === "exercise" ? Dumbbell : id === "prescription" ? Pill : id === "trends" ? ChartNoAxesColumn : Settings; }
 
 export default function Home() {
   const today = dateKey();
@@ -84,7 +86,7 @@ export default function Home() {
       {tab === "trends" && <section className="page-section"><p className="eyebrow">Patterns, not perfection</p><h2>Your week at a glance</h2><p className="muted">Use trends to notice what helps, not to grade yourself.</p><div className="trend-grid">{recentDates.map((date) => { const item = state.entries[date] ?? createEntry(date); return <div className="trend-row" key={date}><strong>{new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(new Date(`${date}T12:00:00`))}</strong><div className="trend-bar"><span style={{ width: `${score(item)}%` }} /></div><output>{score(item)}</output></div>; })}</div></section>}
       {tab === "history" && <section className="page-section"><p className="eyebrow">Your record</p><h2>Past check-ins</h2><p className="muted">Tap a day to reopen its reflection and prescription.</p><div className="history-list">{Object.values(state.entries).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 30).map((item) => <button key={item.date} onClick={() => { setSelectedDate(item.date); setTab("today"); }} type="button"><span><strong>{item.date}</strong><small>{item.workoutType === "none" ? "No workout logged" : item.workoutType} {item.note ? " / note saved" : ""}</small></span><output>{score(item)}</output></button>)}</div></section>}
       {tab === "settings" && <section className="page-section"><p className="eyebrow">Your space</p><h2>Settings</h2><div className="settings-list"><div><strong>Oura connection</strong><small>{connected ? "Connected and read-only" : "Not connected"}</small><a href="/api/integrations/oura/start">{connected ? "Reconnect Oura" : "Log in to Oura"}</a></div><div><strong>Privacy</strong><small>Your check-ins are stored on this device.</small><button onClick={() => { const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `well-being-${today}.json`; link.click(); URL.revokeObjectURL(url); }} type="button">Export my data</button><button className="danger-link" onClick={() => { if (window.confirm("Delete all local check-ins?")) { setState({ entries: {} }); window.localStorage.removeItem(STORAGE_KEY); } }} type="button">Delete local data</button></div></div></section>}
-      <nav className="bottom-nav" aria-label="Main navigation">{tabs.map((item) => <button className={tab === item.id ? "bottom-nav-active" : ""} key={item.id} onClick={() => setTab(item.id)} type="button">{item.label}</button>)}</nav>
+      <nav className="bottom-nav" aria-label="Main navigation">{tabs.map((item) => { const Icon = tabIcon(item.id); return <button aria-label={item.label} className={tab === item.id ? "bottom-nav-active" : ""} key={item.id} onClick={() => setTab(item.id)} type="button"><span className="nav-icon"><Icon aria-hidden="true" size={18} strokeWidth={2} /></span><span className="nav-label">{item.label}</span></button>; })}</nav>
       <footer className="privacy-note"><span className="privacy-dot" /> Your check-ins stay on this device.</footer>
     </div>
   </main>;
