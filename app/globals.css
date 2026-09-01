@@ -159,6 +159,17 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .score-band-high { --score-color: #78b89d; animation: wellness-pulse 2.6s ease-in-out infinite; }
 @keyframes wellness-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(120 184 157 / .22); } 50% { box-shadow: 0 0 0 12px rgb(120 184 157 / 0); } }
 .prescription-detail h2 { max-width: 720px; }
+.topbar { display: none; }
+.welcome-row { gap: 14px; padding-top: 28px; }
+.welcome-row > .score-ring { order: 1; width: 190px; margin-bottom: 2px; }
+.welcome-row > .oura-inline { order: 2; }
+.welcome-row > div:last-child { order: 3; }
+.oura-inline { display: flex; align-items: center; justify-content: center; gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 10px 0; }
+.oura-inline span { display: grid; min-width: 74px; gap: 3px; border-left: 1px solid var(--line); padding: 0 12px; }
+.oura-inline span:first-child { border-left: 0; }
+.oura-inline strong { color: var(--ink); font-size: .95rem; }
+.oura-inline small { color: var(--muted); font-size: .62rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.oura-snapshot { display: none; }
 .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 900px; margin-top: 30px; }
 .detail-grid article, .prescription-why { border: 1px solid var(--line); border-radius: 12px; background: white; padding: 18px; }
 .detail-grid ol, .detail-grid ul { display: grid; gap: 10px; margin: 14px 0 0; padding-left: 20px; color: var(--muted); font-size: .82rem; line-height: 1.4; }
