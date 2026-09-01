@@ -170,7 +170,11 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .welcome-row { display: grid; grid-template-columns: 1fr; justify-items: center; padding-top: 44px; text-align: center; }
 .welcome-row > div:first-child { order: 2; }
 .welcome-row .score-ring { order: 1; margin-bottom: 12px; }
-.score-ring { --score-color: var(--orange); background: conic-gradient(var(--score-color) var(--score), #dfe7e8 0); transition: background .5s ease; }
+.score-ring { --score-color: var(--orange); width: 216px !important; border: 1px solid rgb(36 52 58 / .08); background: conic-gradient(var(--score-color) var(--score), #dfe7e8 0); box-shadow: 0 14px 30px rgb(36 52 58 / .12); transition: background .5s ease, box-shadow .5s ease; }
+.score-ring::before { position: absolute; inset: -9px; border: 1px solid color-mix(in srgb, var(--score-color) 38%, transparent); border-radius: inherit; content: ""; opacity: .7; }
+.score-ring::after { inset: 14px; border: 1px solid rgb(36 52 58 / .05); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .45); }
+.score-ring strong { font-size: 4rem; line-height: .9; }
+.score-ring span { margin-top: 7px; font-size: .66rem; letter-spacing: .12em; }
 .score-band-low { --score-color: #78aeb2; }
 .score-band-steady { --score-color: #e8b878; }
 .score-band-high { --score-color: #78b89d; animation: wellness-pulse 2.6s ease-in-out infinite; }
