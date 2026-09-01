@@ -103,3 +103,32 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .privacy-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
 @media (max-width: 700px) { .wellness-shell { width: min(100% - 22px, 560px); padding-top: 16px; } .welcome-row { align-items: flex-start; padding: 42px 0 26px; } .score-ring { width: 96px; } .score-ring strong { font-size: 1.85rem; } .wellness-grid { grid-template-columns: 1fr; } .habit-surface { grid-row: auto; } .surface { padding: 17px; } .integration-list { grid-template-columns: 1fr; } .prescription-card { grid-template-columns: 1fr auto; padding: 18px; } .prescription-list { grid-template-columns: repeat(2, 1fr); } .prescription-support { grid-template-columns: 1fr; } .oura-snapshot { grid-template-columns: 1fr; } .oura-stats { grid-template-columns: repeat(2, 1fr); } .oura-stats span { border-top: 1px solid #c9d9c1; border-left: 0; padding: 10px 0 0; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+.prescription-controls { display: flex; flex-wrap: wrap; grid-column: 1 / -1; gap: 8px; border-top: 1px solid #3d5344; padding-top: 14px; }
+.prescription-controls label { display: grid; gap: 5px; color: #c5d2c5; font-size: .68rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.prescription-controls select { border: 1px solid #607463; border-radius: 7px; background: #23332b; padding: 7px 9px; color: white; font-size: .75rem; }
+.prescription-primary, .prescription-complete { grid-column: 1 / -1; min-height: 42px; border: 0; border-radius: 8px; padding: 0 14px; font-size: .78rem; font-weight: 900; }
+.prescription-primary { background: var(--green); color: var(--ink); }
+.prescription-primary:disabled { opacity: .75; }
+.prescription-complete { background: var(--orange); color: white; }
+.plan-complete { grid-column: 1 / -1; color: var(--green); font-size: .78rem; font-weight: 900; }
+.why-plan { grid-column: 1 / -1; border-top: 1px solid #3d5344; padding-top: 10px; color: #c5d2c5; font-size: .76rem; }
+.why-plan summary { cursor: pointer; color: var(--green); font-weight: 900; }
+.why-plan p { margin-top: 8px; line-height: 1.4; }
+.page-section { padding: 58px 0 24px; }
+.page-section h2 { margin-top: 9px; max-width: 700px; }
+.trend-grid, .history-list, .settings-list { display: grid; gap: 12px; max-width: 720px; margin-top: 28px; }
+.trend-row { display: grid; grid-template-columns: 44px 1fr 36px; align-items: center; gap: 10px; }
+.trend-row strong, .trend-row output { font-size: .75rem; font-weight: 900; }
+.trend-row output { color: var(--orange); text-align: right; }
+.trend-bar { height: 12px; overflow: hidden; border-radius: 999px; background: #dfe7d9; }
+.trend-bar span { display: block; height: 100%; border-radius: inherit; background: var(--orange); }
+.history-list button, .settings-list > div { display: flex; align-items: center; justify-content: space-between; gap: 14px; border: 1px solid var(--line); border-radius: 11px; background: white; padding: 14px; color: var(--ink); text-align: left; }
+.history-list button span, .settings-list > div { display: grid; gap: 5px; }
+.history-list small, .settings-list small { color: var(--muted); font-size: .75rem; }
+.history-list output { color: var(--orange); font-size: 1.1rem; font-weight: 900; }
+.settings-list a, .settings-list button { justify-self: start; border: 0; border-radius: 999px; background: var(--ink); padding: 8px 11px; color: white; font-size: .72rem; font-weight: 900; text-decoration: none; }
+.settings-list .danger-link { background: #9d493e; }
+.bottom-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 32px; border-top: 1px solid var(--line); padding-top: 12px; }
+.bottom-nav button { min-height: 40px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: .72rem; font-weight: 900; }
+.bottom-nav-active { background: var(--ink) !important; color: var(--green) !important; }
+@media (max-width: 700px) { .prescription-controls { display: grid; grid-template-columns: repeat(3, 1fr); } .prescription-controls select { width: 100%; } .page-section { padding-top: 42px; } .settings-list > div { align-items: flex-start; flex-direction: column; } }

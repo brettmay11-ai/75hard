@@ -1,24 +1,25 @@
 # Well / Being
 
-A private, local-first wellness check-in. It saves daily reflections in the browser on your device.
+A private, mobile-first wellness app that turns Oura recovery data and daily check-ins into a practical training, recovery, and food prescription.
 
-The app can connect read-only to Oura and Strava through OAuth. Add `APP_URL`, `OURA_CLIENT_ID`, `OURA_CLIENT_SECRET`, `OURA_REDIRECT_URI`, `STRAVA_CLIENT_ID`, and `STRAVA_CLIENT_SECRET` to the hosted environment.
+Daily check-ins are stored in the browser on the device. Oura is read-only and supplies readiness, sleep score, activity, steps, and recent workouts.
 
 OAuth callback URLs:
 
 - Oura: `https://YOUR-DOMAIN/api/integrations/oura/callback`
 - Strava: `https://YOUR-DOMAIN/api/integrations/strava/callback`
 
-## What It Tracks
+## What It Includes
 
-- Diet followed
-- First 45-minute workout
-- Second 45-minute outdoor workout
-- One gallon of water
-- 10 pages of reading
-- Daily progress photo
-- Optional notes for each day
-- 75-day visual progress board
+- Oura-powered wellness score and daily prescription
+- Specific movements with sets, reps, running, stretching, and recovery
+- Food focus that adapts to recovery and training demand
+- Editable time, equipment, and personal readiness override
+- Daily anchors, hydration, reflections, trends, and history
+- Local data export and deletion controls
+- Mobile pull-to-refresh and home-screen friendly layout
+
+The Oura OAuth routes require `APP_URL`, `OURA_CLIENT_ID`, `OURA_CLIENT_SECRET`, and `OURA_REDIRECT_URI` in the hosted environment.
 
 ## Run Locally
 
