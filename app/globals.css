@@ -150,6 +150,15 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .empty-state { display: grid; gap: 8px; border: 1px dashed #b7cbcb; border-radius: 11px; background: rgb(255 255 255 / .55); padding: 22px; color: var(--muted); }
 .empty-state p { font-size: .82rem; line-height: 1.4; }
 .empty-state a { justify-self: start; border-radius: 999px; background: var(--ink); padding: 8px 11px; color: white; font-size: .72rem; font-weight: 900; text-decoration: none; }
+.welcome-row { display: grid; grid-template-columns: 1fr; justify-items: center; padding-top: 44px; text-align: center; }
+.welcome-row > div:first-child { order: 2; }
+.welcome-row .score-ring { order: 1; margin-bottom: 12px; }
+.score-ring { --score-color: var(--orange); background: conic-gradient(var(--score-color) var(--score), #dfe7e8 0); transition: background .5s ease; }
+.score-band-low { --score-color: #78aeb2; }
+.score-band-steady { --score-color: #e8b878; }
+.score-band-high { --score-color: #78b89d; animation: wellness-pulse 2.6s ease-in-out infinite; }
+@keyframes wellness-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(120 184 157 / .22); } 50% { box-shadow: 0 0 0 12px rgb(120 184 157 / 0); } }
+.prescription-detail h2 { max-width: 720px; }
 .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 900px; margin-top: 30px; }
 .detail-grid article, .prescription-why { border: 1px solid var(--line); border-radius: 12px; background: white; padding: 18px; }
 .detail-grid ol, .detail-grid ul { display: grid; gap: 10px; margin: 14px 0 0; padding-left: 20px; color: var(--muted); font-size: .82rem; line-height: 1.4; }
