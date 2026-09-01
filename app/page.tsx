@@ -70,7 +70,7 @@ export default function Home() {
   const [state, setState] = useState<WellnessState>({ entries: {} });
   const [selectedDate, setSelectedDate] = useState(today);
   const [loaded, setLoaded] = useState(false);
-  const [connections, setConnections] = useState({ oura: false, strava: false });
+  const [connections, setConnections] = useState({ oura: false });
   const [connectionMessage, setConnectionMessage] = useState("");
   const [ouraData, setOuraData] = useState<OuraSnapshot | null>(null);
   const [ouraDataMessage, setOuraDataMessage] = useState("");
@@ -106,7 +106,10 @@ export default function Home() {
 
   useEffect(() => {
     void fetch("/api/integrations/status").then(async (response) => {
-      if (response.ok) setConnections(await response.json() as { oura: boolean; strava: boolean });
+      if (response.ok) {
+        const payload = await response.json() as { oura?: boolean };
+        setConnections({ oura: Boolean(payload.oura) });
+      }
     });
     const params = new URLSearchParams(window.location.search);
     const connected = params.get("connected");
@@ -187,11 +190,11 @@ export default function Home() {
 
           <section className="surface hydration-surface"><div className="section-heading"><div><p className="eyebrow">Hydration</p><h3>Water check</h3></div><strong className="big-number">{entry.water}<small>/ 8 glasses</small></strong></div><div className="glass-row" aria-label="Water glasses">{Array.from({ length: 8 }, (_, index) => <button className={index < entry.water ? "water-glass water-glass-full" : "water-glass"} key={index} onClick={() => updateField("water", index + 1 === entry.water ? index : index + 1)} type="button" aria-label={`Set water to ${index + 1} glasses`}><span /></button>)}</div><p className="muted">Tap a glass to log where you are.</p></section>
 
-          <section className="surface workout-history-surface"><div className="section-heading"><div><p className="eyebrow">Training history</p><h3>Last workout</h3></div><span className="signal-badge">Strava next</span></div><label className="workout-log"><span>What did you do?</span><select aria-label="Last workout type" onChange={(event) => updateField("workoutType", event.target.value as WellnessEntry["workoutType"])} value={entry.workoutType}><option value="none">Not logged</option><option value="strength">Strength</option><option value="run">Run</option><option value="cycle">Cycle</option><option value="sport">Sport</option><option value="mobility">Mobility</option></select></label><p className="muted">Strava will replace this manual entry once workout history is connected.</p></section>
+          <section className="surface workout-history-surface"><div className="section-heading"><div><p className="eyebrow">Training history</p><h3>Last workout</h3></div><span className="signal-badge">Oura next</span></div><label className="workout-log"><span>What did you do?</span><select aria-label="Last workout type" onChange={(event) => updateField("workoutType", event.target.value as WellnessEntry["workoutType"])} value={entry.workoutType}><option value="none">Not logged</option><option value="strength">Strength</option><option value="run">Run</option><option value="cycle">Cycle</option><option value="sport">Sport</option><option value="mobility">Mobility</option></select></label><p className="muted">Oura workout history will replace this manual entry when it is connected.</p></section>
 
           <section className="surface note-surface"><div className="section-heading"><div><p className="eyebrow">Reflection</p><h3>Leave a note</h3></div><span className="note-prompt">What helped today?</span></div><textarea aria-label="Daily reflection" onChange={(event) => updateField("note", event.target.value)} placeholder="A win, a worry, something you noticed..." value={entry.note} /></section>
 
-          <section className="surface integrations-surface"><div className="section-heading"><div><p className="eyebrow">Connected data</p><h3>Bring your numbers with you</h3></div><span className="signal-badge">Read-only</span></div><p className="muted">Log in securely through Oura or Strava. The app only requests the data needed for your wellness view.</p><div className="integration-list"><div className="integration-row"><span className="integration-logo integration-logo-oura">O</span><div><strong>Oura</strong><small>Sleep, readiness, recovery</small></div><a className={connections.oura ? "integration-action integration-action-connected" : "integration-action"} href="/api/integrations/oura/start">{connections.oura ? "Connected" : "Log in"}</a></div><div className="integration-row"><span className="integration-logo integration-logo-strava">S</span><div><strong>Strava</strong><small>Runs, walks, rides, workouts</small></div><a className={connections.strava ? "integration-action integration-action-connected" : "integration-action"} href="/api/integrations/strava/start">{connections.strava ? "Connected" : "Log in"}</a></div></div>{connectionMessage && <p className="connection-message" role="status">{connectionMessage}</p>}</section>
+          <section className="surface integrations-surface"><div className="section-heading"><div><p className="eyebrow">Connected data</p><h3>Oura is your source</h3></div><span className="signal-badge">Read-only</span></div><p className="muted">Use your Oura scores to guide today&apos;s wellness plan.</p><div className="integration-list"><div className="integration-row"><span className="integration-logo integration-logo-oura">O</span><div><strong>Oura</strong><small>Sleep, readiness, activity</small></div><a className={connections.oura ? "integration-action integration-action-connected" : "integration-action"} href="/api/integrations/oura/start">{connections.oura ? "Connected" : "Log in"}</a></div></div>{connectionMessage && <p className="connection-message" role="status">{connectionMessage}</p>}</section>
         </div>
         <footer className="privacy-note"><span className="privacy-dot" /> Your check-ins stay on this device.</footer>
       </div>
