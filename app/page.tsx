@@ -16,6 +16,7 @@ type WellnessEntry = {
 };
 
 type WellnessState = { entries: Record<string, WellnessEntry> };
+type OuraSnapshot = { sleepScore?: number; readinessScore?: number; activityScore?: number; sleepHours?: number; steps?: number };
 
 const STORAGE_KEY = "personal-wellness-journal";
 const HABITS = [
@@ -44,16 +45,18 @@ function scoreEntry(entry: WellnessEntry) {
 
 type Prescription = { label: string; title: string; why: string; moves: string[] };
 
-function getPrescription(entry: WellnessEntry, history: WellnessEntry[]): Prescription {
+function getPrescription(entry: WellnessEntry, history: WellnessEntry[], oura?: OuraSnapshot | null): Prescription {
+  const recovery = oura?.readinessScore ? Math.ceil(oura.readinessScore / 20) : entry.recovery;
+  const sleep = oura?.sleepHours ?? entry.sleep;
   const recent = history.filter((item) => item.workoutType !== "none").slice(-3);
   const hasHardRun = recent.some((item) => item.workoutType === "run" && item.movement >= 35);
-  if (entry.recovery <= 2 || entry.sleep < 6) {
+  if (recovery <= 2 || sleep < 6) {
     return { label: "Low load", title: "Recover on purpose", why: "Your sleep or recovery signal is asking for less intensity today.", moves: ["20 min easy walk", "2 rounds: 8 cat-cows, 8 world's greatest stretches per side", "3 x 45 sec relaxed breathing"] };
   }
   if (hasHardRun) {
     return { label: "Balance day", title: "Build the base", why: "You have a hard run in the recent mix, so today shifts toward strength and control.", moves: ["Goblet squat: 3 x 10", "Push-ups: 3 x 8-12", "1-arm row: 3 x 10 per side", "Dead bug: 3 x 8 per side", "10 min easy walk cooldown"] };
   }
-  if (entry.recovery >= 4 && entry.energy >= 4 && entry.sleep >= 7) {
+  if (recovery >= 4 && entry.energy >= 4 && sleep >= 7) {
     return { label: "High readiness", title: "Train with intent", why: "Your current signals support a focused strength session.", moves: ["Warm-up: 6 min brisk walk + mobility", "Squat or leg press: 4 x 6-8", "Bench press or push-ups: 4 x 6-10", "Romanian deadlift: 3 x 8-10", "Farmer carry: 4 x 40 sec"] };
   }
   return { label: "Steady effort", title: "Move and reset", why: "A moderate session keeps momentum without borrowing from tomorrow.", moves: ["5 min easy warm-up", "Run/walk intervals: 8 x 1 min steady, 1 min easy", "Reverse lunges: 3 x 8 per side", "Plank: 3 x 30-45 sec", "5 min cooldown stretch"] };
@@ -66,6 +69,8 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
   const [connections, setConnections] = useState({ oura: false, strava: false });
   const [connectionMessage, setConnectionMessage] = useState("");
+  const [ouraData, setOuraData] = useState<OuraSnapshot | null>(null);
+  const [ouraDataMessage, setOuraDataMessage] = useState("");
   const refreshStartY = useRef<number | null>(null);
   const refreshDistance = useRef(0);
   const [refreshProgress, setRefreshProgress] = useState(0);
@@ -81,6 +86,18 @@ export default function Home() {
     }
     setLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (!connections.oura) return;
+    void fetch(`/api/integrations/oura/data?date=${today}`).then(async (response) => {
+      if (!response.ok) { setOuraDataMessage("Oura data needs a fresh connection."); return; }
+      const payload = await response.json() as { sleep?: Record<string, unknown> | null; readiness?: Record<string, unknown> | null; activity?: Record<string, unknown> | null };
+      const sleep = payload.sleep || {};
+      const readiness = payload.readiness || {};
+      const activity = payload.activity || {};
+      setOuraData({ sleepScore: Number(sleep.score) || undefined, readinessScore: Number(readiness.score) || undefined, activityScore: Number(activity.score) || undefined, sleepHours: Number(sleep.total_sleep_duration) ? Number(sleep.total_sleep_duration) / 3600 : undefined, steps: Number(activity.steps) || undefined });
+    });
+  }, [connections.oura, today]);
 
   useEffect(() => { if (loaded) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, [loaded, state]);
 
@@ -104,7 +121,7 @@ export default function Home() {
     date.setDate(date.getDate() - (6 - index));
     return dateKey(date);
   }), [today]);
-  const prescription = getPrescription(entry, recentDates.slice(0, -1).map((date) => state.entries[date] ?? createEntry(date)));
+  const prescription = getPrescription(entry, recentDates.slice(0, -1).map((date) => state.entries[date] ?? createEntry(date)), ouraData);
 
   function updateEntry(next: WellnessEntry) { setState((current) => ({ ...current, entries: { ...current.entries, [next.date]: next } })); }
   function updateField<Key extends keyof WellnessEntry>(key: Key, value: WellnessEntry[Key]) { updateEntry({ ...entry, [key]: value }); }
@@ -154,11 +171,13 @@ export default function Home() {
           })}
         </nav>
 
-        <section className="prescription-card">
+          <section className="prescription-card">
           <div className="prescription-intro"><p className="eyebrow">Today&apos;s prescription</p><h3>{prescription.title}</h3><p>{prescription.why}</p></div>
           <span className="prescription-label">{prescription.label}</span>
           <ol className="prescription-list">{prescription.moves.map((move) => <li key={move}>{move}</li>)}</ol>
         </section>
+
+        {connections.oura && <section className="oura-snapshot"><div><p className="eyebrow">Oura sync</p><h3>Your recovery inputs</h3></div><div className="oura-stats"><span><strong>{ouraData?.readinessScore ?? "--"}</strong><small>readiness</small></span><span><strong>{ouraData?.sleepHours ? `${ouraData.sleepHours.toFixed(1)}h` : "--"}</strong><small>sleep</small></span><span><strong>{ouraData?.activityScore ?? "--"}</strong><small>activity</small></span><span><strong>{ouraData?.steps?.toLocaleString() ?? "--"}</strong><small>steps</small></span></div>{ouraDataMessage && <p className="connection-message">{ouraDataMessage}</p>}</section>}
 
         <div className="wellness-grid">
           <section className="surface habit-surface"><div className="section-heading"><div><p className="eyebrow">Daily anchors</p><h3>Keep it simple</h3></div><span className="section-count">{Object.values(entry.habits).filter(Boolean).length}/{HABITS.length}</span></div><div className="habit-list">{HABITS.map((habit) => <button className={entry.habits[habit.id] ? "habit-row habit-row-done" : "habit-row"} key={habit.id} onClick={() => toggleHabit(habit.id)} type="button"><span className="habit-check">{entry.habits[habit.id] ? "✓" : ""}</span><span className="habit-copy"><strong>{habit.label}</strong><small>{habit.detail}</small></span><span className="habit-arrow">›</span></button>)}</div></section>

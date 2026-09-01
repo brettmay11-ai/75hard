@@ -2,8 +2,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export type IntegrationName = "oura" | "strava";
-type IntegrationRecord = { accessToken: string; refreshToken?: string; expiresAt?: number; connectedAt: string };
-type IntegrationStore = Partial<Record<IntegrationName, IntegrationRecord>>;
+export type IntegrationRecord = { accessToken: string; refreshToken?: string; expiresAt?: number; connectedAt: string };
+export type IntegrationStore = Partial<Record<IntegrationName, IntegrationRecord>>;
 
 const storePath = path.join(process.cwd(), "data", "integrations.json");
 
