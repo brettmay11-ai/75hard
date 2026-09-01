@@ -142,7 +142,7 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .exercise-row { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 11px; background: white; padding: 13px; }
 .exercise-row > div:nth-child(2) { display: grid; gap: 5px; }
 .exercise-row small { color: var(--muted); font-size: .75rem; }
-.exercise-row > span { color: var(--muted); font-size: .75rem; font-weight: 900; }
+.exercise-row > span { color: var(--muted); font-size: .68rem; font-weight: 900; text-align: right; white-space: nowrap; }
 .exercise-icon { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 10px; background: var(--mint); color: var(--ink); font-size: 1rem; font-weight: 900; }
 .exercise-prescription { max-width: 900px; margin-top: 28px; border: 1px solid #c8dfe0; border-radius: 14px; background: #eaf4f3; padding: 20px; }
 .exercise-prescription-heading { display: flex; align-items: start; justify-content: space-between; gap: 14px; }
