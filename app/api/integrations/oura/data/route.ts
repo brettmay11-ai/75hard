@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   if (!oura) return Response.json({ connected: false }, { status: 404 });
   const date = new URL(request.url).searchParams.get("date") || new Date().toISOString().slice(0, 10);
   const start = new Date(`${date}T12:00:00`);
-  start.setDate(start.getDate() - 3);
+  start.setDate(start.getDate() - 6);
   const startDate = start.toISOString().slice(0, 10);
   const headers = { Authorization: `Bearer ${oura.accessToken}` };
   const query = `?start_date=${startDate}&end_date=${date}`;
