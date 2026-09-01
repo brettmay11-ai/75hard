@@ -12,6 +12,7 @@ type Tab = "today" | "exercise" | "prescription" | "trends" | "history" | "setti
 type Prescription = { mode: string; title: string; reason: string; moves: string[]; recovery: string[]; food: string[] };
 
 const STORAGE_KEY = "personal-wellness-journal";
+const VIEW_STORAGE_KEY = "well-being-active-view";
 const HABITS = [{ id: "morning", label: "Morning routine", detail: "Start without the scroll" }, { id: "outside", label: "Time outside", detail: "A little daylight counts" }, { id: "movement", label: "Move your body", detail: "Walk, train, stretch" }, { id: "winddown", label: "Evening wind-down", detail: "Make room for rest" }];
 const tabs: { id: Tab; label: string }[] = [{ id: "today", label: "Today" }, { id: "exercise", label: "Exercise" }, { id: "prescription", label: "Prescription" }, { id: "trends", label: "Trends" }, { id: "settings", label: "Settings" }];
 
@@ -46,6 +47,7 @@ export default function Home() {
   const [tab, setTab] = useState<Tab>("today");
   const [selectedDate, setSelectedDate] = useState(today);
   const [loaded, setLoaded] = useState(false);
+  const [viewLoaded, setViewLoaded] = useState(false);
   const [limit, setLimit] = useState("45");
   const [equipment, setEquipment] = useState("gym");
   const [override, setOverride] = useState("auto");
@@ -58,6 +60,8 @@ export default function Home() {
 
   useEffect(() => { const saved = window.localStorage.getItem(STORAGE_KEY); if (saved) { try { const parsed = JSON.parse(saved) as State; setState({ entries: Object.fromEntries(Object.entries(parsed.entries || {}).map(([date, item]) => [date, normalize(item, date)])) }); } catch { window.localStorage.removeItem(STORAGE_KEY); } } setLoaded(true); }, []);
   useEffect(() => { if (loaded) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, [loaded, state]);
+  useEffect(() => { const saved = window.localStorage.getItem(VIEW_STORAGE_KEY); if (saved) { try { const view = JSON.parse(saved) as { tab?: Tab; selectedDate?: string }; if (view.tab && tabs.some((item) => item.id === view.tab)) setTab(view.tab); if (view.selectedDate) setSelectedDate(view.selectedDate); } catch { window.localStorage.removeItem(VIEW_STORAGE_KEY); } } setViewLoaded(true); }, []);
+  useEffect(() => { if (viewLoaded) window.localStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify({ tab, selectedDate })); }, [viewLoaded, tab, selectedDate]);
   useEffect(() => { void fetch("/api/integrations/status").then(async (response) => { if (response.ok) setConnected(Boolean((await response.json() as { oura?: boolean }).oura)); }); }, []);
   useEffect(() => { if (!connected) return; void fetch(`/api/integrations/oura/data?date=${selectedDate}`).then(async (response) => { if (!response.ok) return; const data = await response.json() as { sleep?: Record<string, unknown>; readiness?: Record<string, unknown>; activity?: Record<string, unknown>; workouts?: OuraWorkout[] }; const sleep = data.sleep || {}; const readiness = data.readiness || {}; const activity = data.activity || {}; const workouts = data.workouts || []; setOura({ sleepScore: Number(sleep.score) || undefined, readinessScore: Number(readiness.score) || undefined, activityScore: Number(activity.score) || undefined, steps: Number(activity.steps) || undefined, workouts, recentWorkouts: workouts.map(workoutName), syncedAt: new Date().toISOString() }); }); }, [connected, selectedDate]);
 
