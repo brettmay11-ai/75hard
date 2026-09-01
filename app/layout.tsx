@@ -13,14 +13,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Personal 75 Hard Tracker",
-  description: "A local-first 75 Hard progress tracker for daily commitments.",
-  themeColor: "#b8f23d",
+  title: "Well / Being",
+  description: "A private daily wellness check-in for better self-awareness.",
+  themeColor: "#f5f6ef",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "75 Hard",
+    title: "Well / Being",
   },
   icons: {
     icon: [

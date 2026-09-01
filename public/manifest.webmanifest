@@ -1,12 +1,12 @@
 {
-  "name": "Personal 75 Hard Tracker",
-  "short_name": "75 Hard",
-  "description": "Track 75 Hard progress and water reminders.",
+  "name": "Well / Being",
+  "short_name": "Well / Being",
+  "description": "A private daily wellness check-in.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0b0d0e",
-  "theme_color": "#b8f23d",
+  "background_color": "#f5f6ef",
+  "theme_color": "#f5f6ef",
   "icons": [
     {
       "src": "/icon-192.png",
