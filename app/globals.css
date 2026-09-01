@@ -298,7 +298,14 @@ h2 { font-size: 1.1rem; letter-spacing: -.01em; }
 .page-section h1 { margin-top: 7px; }
 .page-section .muted { max-width: 46ch; }
 
-.detail-grid { display: grid; gap: 12px; width: 100%; margin-top: 24px; }
+.session-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: 100%; margin-top: 22px; }
+.session-head strong { font-size: 1rem; font-weight: 600; }
+.plan-chip { border: 1px solid var(--line); border-radius: 999px; background: var(--surface); padding: 5px 11px; color: var(--ink); font-size: .7rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+.plan-state { margin-left: auto; color: var(--muted); font-size: .78rem; font-weight: 600; }
+.plan-state-started { color: var(--caution); }
+.plan-state-complete { color: var(--positive); }
+
+.detail-grid { display: grid; gap: 12px; width: 100%; margin-top: 14px; }
 .detail-grid article, .prescription-why { width: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 17px; }
 .detail-label { color: var(--ink); font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .detail-grid ol, .detail-grid ul { display: grid; gap: 9px; margin: 13px 0 0; padding-left: 19px; color: var(--muted); font-size: .86rem; line-height: 1.45; }
@@ -354,6 +361,7 @@ h2 { font-size: 1.1rem; letter-spacing: -.01em; }
 .empty-state { display: grid; gap: 8px; width: 100%; margin-top: 24px; border: 1px dashed #b7cbcb; border-radius: 11px; background: rgb(255 255 255 / .55); padding: 20px; }
 .empty-state strong { color: var(--ink); font-size: .95rem; font-weight: 600; }
 .empty-state p { color: var(--muted); font-size: .85rem; line-height: 1.45; }
+.empty-state .ghost-button { justify-self: start; margin-top: 4px; }
 .empty-state a { justify-self: start; margin-top: 4px; border-radius: 999px; background: var(--ink); padding: 9px 14px; color: var(--on-dark); font-size: .78rem; font-weight: 600; text-decoration: none; }
 
 .privacy-note { display: flex; align-items: center; gap: 8px; margin-top: 26px; color: var(--muted); font-size: .74rem; }
@@ -414,7 +422,7 @@ h2 { font-size: 1.1rem; letter-spacing: -.01em; }
   .wellness-grid { grid-template-columns: 1fr 1fr; align-items: start; }
   .habit-surface { grid-row: span 2; }
   .note-surface { grid-column: 1 / -1; }
-  .detail-grid { grid-template-columns: repeat(3, 1fr); }
+  .detail-grid { grid-template-columns: repeat(2, 1fr); }
   .score-ring { width: 124px; }
   h1 { font-size: 1.8rem; }
 }

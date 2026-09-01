@@ -3,15 +3,15 @@
 import { Activity, ArrowLeft, Bike, ChartNoAxesColumn, Check, CheckCheck, Dumbbell, Footprints, House, Play, Settings, WavesLadder, type LucideIcon } from "lucide-react";
 import { type TouchEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-type WorkoutType = "none" | "strength" | "run" | "cycle" | "sport" | "mobility";
+type WorkoutType = "none" | "strength" | "run" | "cycle" | "sport" | "mobility" | "mind";
 type PlanStatus = "planned" | "started" | "complete";
 type Entry = { date: string; habits: Record<string, boolean>; water: number; movement: number; workoutType: WorkoutType; note: string; planStatus: PlanStatus };
 type State = { entries: Record<string, Entry> };
 type OuraWorkout = Record<string, unknown>;
 type Oura = { sleepScore?: number; readinessScore?: number; activityScore?: number; steps?: number; recentWorkouts?: string[]; workouts?: OuraWorkout[]; syncedAt?: string };
-type Tab = "today" | "exercise" | "plan" | "trends" | "settings";
+type Tab = "today" | "exercise" | "trends" | "settings";
 type Band = "none" | "low" | "steady" | "high";
-type Prescription = { mode: string; title: string; reason: string; moves: string[]; recovery: string[]; food: string[] };
+type Prescription = { mode: string; title: string; reason: string; moves: string[]; recovery: string[]; mind: string[]; food: string[] };
 
 const STORAGE_KEY = "personal-wellness-journal";
 const WATER_GOAL = 8;
@@ -37,6 +37,7 @@ const WORKOUT_TYPES: { value: WorkoutType; label: string }[] = [
   { value: "cycle", label: "Cycle" },
   { value: "sport", label: "Sport" },
   { value: "mobility", label: "Mobility" },
+  { value: "mind", label: "Meditation / breathwork" },
 ];
 
 const BAND_LABEL: Record<Band, string> = { none: "No score yet", low: "Take it easy", steady: "Steady", high: "Strong" };
@@ -107,11 +108,60 @@ function prescription(entry: Entry, history: Entry[], oura: Oura | null, limit: 
   const readiness = oura?.readinessScore ?? 70;
   const sleep = oura?.sleepScore ?? 70;
   const hardRun = [...history, entry].some((item) => item.workoutType === "run" && item.movement >= 35) || Boolean(oura?.recentWorkouts?.some((item) => /run|cycle|hike/i.test(item)));
-  if (override === "recover" || readiness < 60 || sleep < 60) return { mode: "Recovery", title: "Recover on purpose", reason: "Your recent recovery signals call for low intensity and more room to rebuild.", moves: ["20 min easy walk", "2 rounds: 8 cat-cows + 8 world's greatest stretches per side", "10 min gentle mobility"], recovery: ["Breathe slowly for 3 minutes", "Keep effort conversational and finish feeling better"], food: ["Protein at each meal: eggs, yogurt, chicken, fish, tofu", "Colorful produce, soup, rice, potatoes, and steady fluids"] };
-  if (readiness < 75 || sleep < 75) return { mode: "Active recovery", title: "Keep the body moving", reason: "Your signals support movement, but today is better suited to circulation and mobility than hard training.", moves: ["25-35 min easy walk, bike, or swim", "3 rounds: 8 world's greatest stretches per side", "2 rounds: 10 glute bridges + 8 dead bugs per side"], recovery: ["10 min easy stretching for hips, calves, and upper back", "Finish with energy left in the tank; no pushing through fatigue"], food: ["Protein at each meal: eggs, yogurt, chicken, fish, tofu", "Steady carbs: oats, rice, potatoes, fruit", "Hydrate consistently and include colorful produce"] };
-  if (override === "push" || (readiness >= 82 && sleep >= 80)) return { mode: "Build", title: "Train with intent", reason: "Your sleep and readiness support a focused training day.", moves: ["Warm-up: 6 min brisk walk + mobility", equipment === "none" ? "Tempo squats: 4 x 10" : "Squat or leg press: 4 x 6-8", equipment === "none" ? "Push-ups: 4 x 8-15" : "Bench press: 4 x 6-10", "Romanian deadlift: 3 x 8-10", "Farmer carry: 4 x 40 sec"], recovery: ["8-10 min full-body stretching", "Easy walk later if stiff; protect tonight's sleep"], food: ["Protein at every meal: beef, poultry, fish, eggs, dairy, tofu", "Add carbs around training: oats, rice, potatoes, fruit", "Have a protein plus carb meal after training"] };
-  if (hardRun) return { mode: "Balance", title: "Build the base", reason: "Recent activity has been demanding, so today balances strength and control.", moves: ["Goblet squat: 3 x 10", "Push-ups: 3 x 8-12", "1-arm row: 3 x 10 per side", "Dead bug: 3 x 8 per side", "10 min easy walk"], recovery: ["5-8 min calves, hips, and hamstrings", "Keep the next session easy if soreness rises"], food: ["Protein-forward meals: lean meat, fish, cottage cheese, beans", "Moderate carbs: oats, potatoes, rice, fruit", "Add vegetables and healthy fats"] };
-  return { mode: "Steady", title: "Move and reset", reason: `A moderate session fits your current signals. ${limit} minute target.`, moves: ["5 min easy warm-up", "Run/walk intervals: 8 x 1 min steady, 1 min easy", equipment === "none" ? "Reverse lunges: 3 x 8 per side" : "Split squat: 3 x 8 per side", "Plank: 3 x 30-45 sec"], recovery: ["5 min slow breathing after training", "Gentle stretch for calves, hips, chest, and back"], food: ["Balanced plates: protein, whole-food carbs, vegetables", "Choose chicken, lentils, eggs, yogurt, rice, fruit, and greens", "Pair snacks with protein"] };
+  if (override === "restore" || readiness < 50 || sleep < 50) return {
+    mode: "Restore",
+    title: "Rest and reset",
+    reason: "Your readiness and sleep are well down. Today is for breathing, stillness, and sleep rather than training.",
+    moves: ["Box breathing: 5 rounds of 4 in, 4 hold, 4 out, 4 hold", "10 min body scan meditation", "Legs up the wall: 5 min", "10 min slow walk, or nothing at all"],
+    recovery: ["Keep the whole day deliberately light", "Aim for bed 30 minutes earlier than usual"],
+    mind: ["4-7-8 breathing before sleep: 4 rounds", "Leave the phone outside the bedroom tonight"],
+    food: ["Warm and simple: soup, rice, eggs, cooked vegetables", "Protein at each meal and steady fluids"],
+  };
+  if (override === "recover" || readiness < 60 || sleep < 60) return {
+    mode: "Recovery",
+    title: "Recover on purpose",
+    reason: "Your recent recovery signals call for low intensity and more room to rebuild.",
+    moves: ["20 min easy walk", "2 rounds: 8 cat-cows + 8 world's greatest stretches per side", "10 min gentle mobility"],
+    recovery: ["Breathe slowly for 3 minutes", "Keep effort conversational and finish feeling better"],
+    mind: ["Box breathing: 4 min at 4-4-4-4", "5 min body scan before bed"],
+    food: ["Protein at each meal: eggs, yogurt, chicken, fish, tofu", "Colorful produce, soup, rice, potatoes, and steady fluids"],
+  };
+  if (readiness < 75 || sleep < 75) return {
+    mode: "Active recovery",
+    title: "Keep the body moving",
+    reason: "Your signals support movement, but today is better suited to circulation and mobility than hard training.",
+    moves: ["25-35 min easy walk, bike, or swim", "3 rounds: 8 world's greatest stretches per side", "2 rounds: 10 glute bridges + 8 dead bugs per side"],
+    recovery: ["10 min easy stretching for hips, calves, and upper back", "Finish with energy left in the tank; no pushing through fatigue"],
+    mind: ["Coherent breathing: 5 min at roughly 6 breaths per minute", "5 min sitting meditation, morning or evening"],
+    food: ["Protein at each meal: eggs, yogurt, chicken, fish, tofu", "Steady carbs: oats, rice, potatoes, fruit", "Hydrate consistently and include colorful produce"],
+  };
+  if (override === "push" || (readiness >= 82 && sleep >= 80)) return {
+    mode: "Build",
+    title: "Train with intent",
+    reason: "Your sleep and readiness support a focused training day.",
+    moves: ["Warm-up: 6 min brisk walk + mobility", equipment === "none" ? "Tempo squats: 4 x 10" : "Squat or leg press: 4 x 6-8", equipment === "none" ? "Push-ups: 4 x 8-15" : "Bench press: 4 x 6-10", "Romanian deadlift: 3 x 8-10", "Farmer carry: 4 x 40 sec"],
+    recovery: ["8-10 min full-body stretching", "Easy walk later if stiff; protect tonight's sleep"],
+    mind: ["3 min box breathing before your first working set", "5 min slow exhale breathing after training to down-regulate"],
+    food: ["Protein at every meal: beef, poultry, fish, eggs, dairy, tofu", "Add carbs around training: oats, rice, potatoes, fruit", "Have a protein plus carb meal after training"],
+  };
+  if (hardRun) return {
+    mode: "Balance",
+    title: "Build the base",
+    reason: "Recent activity has been demanding, so today balances strength and control.",
+    moves: ["Goblet squat: 3 x 10", "Push-ups: 3 x 8-12", "1-arm row: 3 x 10 per side", "Dead bug: 3 x 8 per side", "10 min easy walk"],
+    recovery: ["5-8 min calves, hips, and hamstrings", "Keep the next session easy if soreness rises"],
+    mind: ["Coherent breathing: 5 min after training", "Take one walk today without headphones"],
+    food: ["Protein-forward meals: lean meat, fish, cottage cheese, beans", "Moderate carbs: oats, potatoes, rice, fruit", "Add vegetables and healthy fats"],
+  };
+  return {
+    mode: "Steady",
+    title: "Move and reset",
+    reason: `A moderate session fits your current signals. ${limit} minute target.`,
+    moves: ["5 min easy warm-up", "Run/walk intervals: 8 x 1 min steady, 1 min easy", equipment === "none" ? "Reverse lunges: 3 x 8 per side" : "Split squat: 3 x 8 per side", "Plank: 3 x 30-45 sec"],
+    recovery: ["5 min slow breathing after training", "Gentle stretch for calves, hips, chest, and back"],
+    mind: ["4 min box breathing to settle before you start", "5 min meditation, guided or silent"],
+    food: ["Balanced plates: protein, whole-food carbs, vegetables", "Choose chicken, lentils, eggs, yogurt, rice, fruit, and greens", "Pair snacks with protein"],
+  };
 }
 
 function workoutName(workout: OuraWorkout) {
@@ -360,6 +410,7 @@ export default function Home() {
                     <option value="auto">Auto</option>
                     <option value="push">Push</option>
                     <option value="recover">Recover</option>
+                    <option value="restore">Reset</option>
                   </select>
                 </label>
               </div>
@@ -370,7 +421,7 @@ export default function Home() {
                 <p className={`plan-status plan-status-${entry.planStatus}`}>
                   {entry.planStatus === "complete" ? "Completed today" : entry.planStatus === "started" ? "In progress" : "Not started"}
                 </p>
-                <button className="ghost-button ghost-button-invert" onClick={() => setTab("plan")} type="button">Full plan</button>
+                <button className="ghost-button ghost-button-invert" onClick={() => setTab("exercise")} type="button">Full session</button>
               </div>
             </section>
           : <section className="surface day-summary">
@@ -443,40 +494,54 @@ export default function Home() {
         </div>
       </>}
 
-      {tab === "plan" && <section className="page-section">
-        <button className="ghost-button" onClick={() => setTab("today")} type="button"><ArrowLeft aria-hidden="true" size={15} strokeWidth={2.4} />Today</button>
-        <p className="eyebrow">Your daily plan</p>
-        <h1>{plan.title}</h1>
-        <p className="muted">{connected ? "Shaped by your Oura recovery signals and recent movement." : "A general plan. Connect Oura and it adapts to your readiness and sleep."}</p>
-        <div className="detail-grid">
-          <article>
-            <p className="detail-label">Training</p>
-            <ol>{plan.moves.map((move) => <li key={move}>{move}</li>)}</ol>
-          </article>
-          <article>
-            <p className="detail-label">Stretch + recovery</p>
-            <ul>{plan.recovery.map((item) => <li key={item}>{item}</li>)}</ul>
-          </article>
-          <article>
-            <p className="detail-label">Food focus</p>
-            <ul>{plan.food.map((item) => <li key={item}>{item}</li>)}</ul>
-          </article>
-        </div>
-        <div className="prescription-why">
-          <strong>Why this plan</strong>
-          <p>{plan.reason}</p>
-          <dl className="summary-grid">
-            <div><dt>Readiness</dt><dd>{oura?.readinessScore ?? "—"}</dd></div>
-            <div><dt>Sleep</dt><dd>{oura?.sleepScore ?? "—"}</dd></div>
-            <div><dt>Activity</dt><dd>{oura?.activityScore ?? "—"}</dd></div>
-          </dl>
-        </div>
-      </section>}
-
       {tab === "exercise" && <section className="page-section">
         <p className="eyebrow">Exercise</p>
-        <h1>Recent workouts</h1>
-        <p className="muted">Your movement history from Oura, kept separate so today&apos;s plan stays easy to scan.</p>
+        <h1>Today&apos;s session</h1>
+        <p className="muted">{connected ? "Shaped by your Oura recovery signals and recent movement." : "A general plan. Connect Oura and it adapts to your readiness and sleep."}</p>
+
+        {isToday
+          ? <>
+              <div className="session-head">
+                <span className="plan-chip">{plan.mode}</span>
+                <strong>{plan.title}</strong>
+                <span className={`plan-state plan-state-${entry.planStatus}`}>{entry.planStatus === "complete" ? "Completed" : entry.planStatus === "started" ? "In progress" : "Not started"}</span>
+              </div>
+              <div className="detail-grid">
+                <article>
+                  <p className="detail-label">{plan.mode === "Restore" ? "Practice" : "Training"}</p>
+                  <ol>{plan.moves.map((move) => <li key={move}>{move}</li>)}</ol>
+                </article>
+                <article>
+                  <p className="detail-label">Stretch + recovery</p>
+                  <ul>{plan.recovery.map((item) => <li key={item}>{item}</li>)}</ul>
+                </article>
+                <article>
+                  <p className="detail-label">Breathwork + meditation</p>
+                  <ul>{plan.mind.map((item) => <li key={item}>{item}</li>)}</ul>
+                </article>
+                <article>
+                  <p className="detail-label">Food focus</p>
+                  <ul>{plan.food.map((item) => <li key={item}>{item}</li>)}</ul>
+                </article>
+              </div>
+              <div className="prescription-why">
+                <strong>Why this plan</strong>
+                <p>{plan.reason}</p>
+                <dl className="summary-grid">
+                  <div><dt>Readiness</dt><dd>{oura?.readinessScore ?? "\u2014"}</dd></div>
+                  <div><dt>Sleep</dt><dd>{oura?.sleepScore ?? "\u2014"}</dd></div>
+                  <div><dt>Activity</dt><dd>{oura?.activityScore ?? "\u2014"}</dd></div>
+                </dl>
+              </div>
+            </>
+          : <div className="empty-state">
+              <strong>You&apos;re looking at {formatDay(selectedDate, { weekday: "long", month: "long", day: "numeric" })}</strong>
+              <p>Sessions are prescribed for the current day. Come back to today to see yours.</p>
+              <button className="ghost-button" onClick={() => setSelectedDate(today)} type="button"><ArrowLeft aria-hidden="true" size={15} strokeWidth={2.4} />Back to today</button>
+            </div>}
+
+        <h2 className="section-title">Recent workouts</h2>
+        <p className="muted">What Oura has recorded, so you can see today&apos;s session against what you have already done.</p>
         {connected
           ? <div className="exercise-list">
               {oura?.workouts?.length
