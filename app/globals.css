@@ -229,7 +229,7 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .score-panel-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .score-title { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .72rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .score-title svg { color: var(--score-color); }
-.score-state { border-radius: 999px; background: color-mix(in srgb, var(--score-color) 18%, white); padding: 6px 9px; color: var(--ink); font-size: .68rem; font-weight: 900; text-transform: uppercase; }
+.score-state { border-radius: 999px; background: color-mix(in srgb, var(--score-color) 18%, white); padding: 6px 9px; color: var(--ink); font-size: .68rem; font-weight: 900; text-transform: uppercase; white-space: nowrap; }
 .score-value { display: flex; align-items: baseline; gap: 7px; margin-top: 18px; }
 .score-value strong { color: var(--ink); font-size: clamp(4.8rem, 18vw, 7.2rem); font-weight: 800; line-height: .82; letter-spacing: 0; }
 .score-value span { color: var(--muted); font-size: .88rem; font-weight: 900; }
