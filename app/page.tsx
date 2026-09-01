@@ -46,23 +46,23 @@ function scoreEntry(entry: WellnessEntry, oura?: OuraSnapshot | null) {
   return Math.round((recovery === null ? personal : recovery * 0.6 + personal * 0.4) * 100);
 }
 
-type Prescription = { label: string; title: string; why: string; moves: string[] };
+type Prescription = { label: string; title: string; why: string; moves: string[]; recovery: string[]; food: string[] };
 
-function getPrescription(entry: WellnessEntry, history: WellnessEntry[], oura?: OuraSnapshot | null): Prescription {
+function getPrescription(entry: WellnessEntry, history: WellnessEntry[], oura?: OuraSnapshot | null, wellnessScore = 0): Prescription {
   const recovery = oura?.readinessScore ? Math.ceil(oura.readinessScore / 20) : entry.recovery;
   const sleepScore = oura?.sleepScore;
   const recent = history.filter((item) => item.workoutType !== "none").slice(-3);
   const hasHardRun = recent.some((item) => item.workoutType === "run" && item.movement >= 35);
   if (recovery <= 2 || (sleepScore !== undefined && sleepScore < 60) || (sleepScore === undefined && entry.sleep < 6)) {
-    return { label: "Low load", title: "Recover on purpose", why: "Your sleep or recovery signal is asking for less intensity today.", moves: ["20 min easy walk", "2 rounds: 8 cat-cows, 8 world's greatest stretches per side", "3 x 45 sec relaxed breathing"] };
+    return { label: "Low load", title: "Recover on purpose", why: "Your sleep or recovery signal is asking for less intensity today.", moves: ["20 min easy walk", "2 rounds: 8 cat-cows, 8 world's greatest stretches per side", "3 x 45 sec relaxed breathing"], recovery: ["10 min easy mobility: hips, ankles, upper back", "Keep the day conversational; stop before fatigue"], food: ["Protein at each meal: eggs, Greek yogurt, chicken, fish, tofu", "Colorful produce and soup or rice-based meals", "Steady fluids and electrolytes if you feel depleted"] };
   }
   if (hasHardRun) {
-    return { label: "Balance day", title: "Build the base", why: "You have a hard run in the recent mix, so today shifts toward strength and control.", moves: ["Goblet squat: 3 x 10", "Push-ups: 3 x 8-12", "1-arm row: 3 x 10 per side", "Dead bug: 3 x 8 per side", "10 min easy walk cooldown"] };
+    return { label: "Balance day", title: "Build the base", why: "You have a hard run in the recent mix, so today shifts toward strength and control.", moves: ["Goblet squat: 3 x 10", "Push-ups: 3 x 8-12", "1-arm row: 3 x 10 per side", "Dead bug: 3 x 8 per side", "10 min easy walk cooldown"], recovery: ["5-8 min lower-body stretching after training", "Light calf, hip flexor, and hamstring work tonight"], food: ["Protein-forward meals: lean meat, fish, cottage cheese, beans", "Moderate carbs: oats, potatoes, rice, fruit", "Add vegetables and healthy fats for a steady day"] };
   }
   if (recovery >= 4 && (sleepScore === undefined || sleepScore >= 80)) {
-    return { label: "High readiness", title: "Train with intent", why: "Your current signals support a focused strength session.", moves: ["Warm-up: 6 min brisk walk + mobility", "Squat or leg press: 4 x 6-8", "Bench press or push-ups: 4 x 6-10", "Romanian deadlift: 3 x 8-10", "Farmer carry: 4 x 40 sec"] };
+    return { label: "High readiness", title: "Train with intent", why: "Your current signals support a focused strength session.", moves: ["Warm-up: 6 min brisk walk + mobility", "Squat or leg press: 4 x 6-8", "Bench press or push-ups: 4 x 6-10", "Romanian deadlift: 3 x 8-10", "Farmer carry: 4 x 40 sec"], recovery: ["8-10 min full-body cooldown stretching", "Easy walk later if you feel stiff; protect tonight's sleep"], food: ["Protein at every meal: beef, poultry, fish, eggs, dairy, tofu", "More carbs around training: rice, oats, potatoes, fruit", "Add a post-workout protein plus carb meal"] };
   }
-  return { label: "Steady effort", title: "Move and reset", why: "A moderate session keeps momentum without borrowing from tomorrow.", moves: ["5 min easy warm-up", "Run/walk intervals: 8 x 1 min steady, 1 min easy", "Reverse lunges: 3 x 8 per side", "Plank: 3 x 30-45 sec", "5 min cooldown stretch"] };
+  return { label: "Steady effort", title: "Move and reset", why: `A moderate session keeps momentum without borrowing from tomorrow. Wellness score: ${wellnessScore}.`, moves: ["5 min easy warm-up", "Run/walk intervals: 8 x 1 min steady, 1 min easy", "Reverse lunges: 3 x 8 per side", "Plank: 3 x 30-45 sec", "5 min cooldown stretch"], recovery: ["5 min slow breathing after training", "Gentle stretch for calves, hips, chest, and back"], food: ["Build balanced plates: protein, whole-food carbs, vegetables", "Choose chicken, lentils, eggs, yogurt, rice, fruit, and greens", "Keep caffeine earlier and pair snacks with protein"] };
 }
 
 export default function Home() {
@@ -127,7 +127,7 @@ export default function Home() {
     date.setDate(date.getDate() - (6 - index));
     return dateKey(date);
   }), [today]);
-  const prescription = getPrescription(entry, recentDates.slice(0, -1).map((date) => state.entries[date] ?? createEntry(date)), ouraData);
+  const prescription = getPrescription(entry, recentDates.slice(0, -1).map((date) => state.entries[date] ?? createEntry(date)), ouraData, score);
 
   function updateEntry(next: WellnessEntry) { setState((current) => ({ ...current, entries: { ...current.entries, [next.date]: next } })); }
   function updateField<Key extends keyof WellnessEntry>(key: Key, value: WellnessEntry[Key]) { updateEntry({ ...entry, [key]: value }); }
@@ -181,6 +181,7 @@ export default function Home() {
           <div className="prescription-intro"><p className="eyebrow">Today&apos;s prescription</p><h3>{prescription.title}</h3><p>{prescription.why}</p></div>
           <span className="prescription-label">{prescription.label}</span>
           <ol className="prescription-list">{prescription.moves.map((move) => <li key={move}>{move}</li>)}</ol>
+          <div className="prescription-support"><div><p className="prescription-support-label">Stretch + recovery</p><ul>{prescription.recovery.map((item) => <li key={item}>{item}</li>)}</ul></div><div><p className="prescription-support-label">Food focus</p><ul>{prescription.food.map((item) => <li key={item}>{item}</li>)}</ul></div></div>
         </section>
 
         {connections.oura && <section className="oura-snapshot"><div><p className="eyebrow">Oura sync</p><h3>Your recovery inputs</h3></div><div className="oura-stats"><span><strong>{ouraData?.readinessScore ?? "--"}</strong><small>readiness</small></span><span><strong>{ouraData?.sleepScore ?? "--"}</strong><small>sleep score</small></span><span><strong>{ouraData?.activityScore ?? "--"}</strong><small>activity</small></span><span><strong>{ouraData?.steps?.toLocaleString() ?? "--"}</strong><small>steps</small></span></div>{ouraDataMessage && <p className="connection-message">{ouraDataMessage}</p>}</section>}
