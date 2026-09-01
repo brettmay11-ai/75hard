@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type TouchEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type WellnessEntry = {
   date: string;
@@ -66,6 +66,10 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
   const [connections, setConnections] = useState({ oura: false, strava: false });
   const [connectionMessage, setConnectionMessage] = useState("");
+  const refreshStartY = useRef<number | null>(null);
+  const refreshDistance = useRef(0);
+  const [refreshProgress, setRefreshProgress] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -105,8 +109,32 @@ export default function Home() {
   function updateField<Key extends keyof WellnessEntry>(key: Key, value: WellnessEntry[Key]) { updateEntry({ ...entry, [key]: value }); }
   function toggleHabit(id: string) { updateEntry({ ...entry, habits: { ...entry.habits, [id]: !entry.habits[id] } }); }
 
+  function handleTouchStart(event: TouchEvent<HTMLElement>) {
+    if (window.scrollY <= 0 && !refreshing) refreshStartY.current = event.touches[0].clientY;
+  }
+
+  function handleTouchMove(event: TouchEvent<HTMLElement>) {
+    if (refreshStartY.current === null || refreshing) return;
+    const distance = event.touches[0].clientY - refreshStartY.current;
+    const next = distance > 0 ? Math.min(distance * 0.55, 92) : 0;
+    refreshDistance.current = next;
+    setRefreshProgress(next);
+  }
+
+  function handleTouchEnd() {
+    refreshStartY.current = null;
+    if (refreshDistance.current >= 70) {
+      setRefreshing(true);
+      window.setTimeout(() => window.location.reload(), 220);
+    } else {
+      refreshDistance.current = 0;
+      setRefreshProgress(0);
+    }
+  }
+
   return (
-    <main className="wellness-app">
+    <main className="wellness-app" onTouchCancel={handleTouchEnd} onTouchEnd={handleTouchEnd} onTouchMove={handleTouchMove} onTouchStart={handleTouchStart}>
+      <div className={refreshProgress > 0 || refreshing ? "refresh-indicator refresh-indicator-visible" : "refresh-indicator"} style={{ transform: `translate(-50%, ${Math.max(refreshProgress - 58, -58)}px)` }} aria-hidden={refreshProgress === 0 && !refreshing}>{refreshing ? "Refreshing" : refreshProgress >= 70 ? "Release to refresh" : "Pull to refresh"}</div>
       <div className="wellness-shell">
         <header className="topbar">
           <div className="brand-lockup"><span className="brand-mark">W</span><div><p className="eyebrow">Personal wellness</p><h1>Well / Being</h1></div></div>
@@ -140,7 +168,7 @@ export default function Home() {
 
           <section className="surface note-surface"><div className="section-heading"><div><p className="eyebrow">Reflection</p><h3>Leave a note</h3></div><span className="note-prompt">What helped today?</span></div><textarea aria-label="Daily reflection" onChange={(event) => updateField("note", event.target.value)} placeholder="A win, a worry, something you noticed..." value={entry.note} /></section>
 
-          <section className="surface integrations-surface"><div className="section-heading"><div><p className="eyebrow">Connected data</p><h3>Bring your numbers with you</h3></div><span className="signal-badge">Read-only</span></div><p className="muted">Connect the tools you already use to make this check-in more complete.</p><div className="integration-list"><div className="integration-row"><span className="integration-logo integration-logo-oura">O</span><div><strong>Oura</strong><small>Sleep, readiness, recovery</small></div><a className={connections.oura ? "integration-action integration-action-connected" : "integration-action"} href="/api/integrations/oura/start">{connections.oura ? "Connected" : "Connect"}</a></div><div className="integration-row"><span className="integration-logo integration-logo-strava">S</span><div><strong>Strava</strong><small>Runs, walks, rides, workouts</small></div><a className={connections.strava ? "integration-action integration-action-connected" : "integration-action"} href="/api/integrations/strava/start">{connections.strava ? "Connected" : "Connect"}</a></div></div>{connectionMessage && <p className="connection-message" role="status">{connectionMessage}</p>}</section>
+          <section className="surface integrations-surface"><div className="section-heading"><div><p className="eyebrow">Connected data</p><h3>Bring your numbers with you</h3></div><span className="signal-badge">Read-only</span></div><p className="muted">Log in securely through Oura or Strava. The app only requests the data needed for your wellness view.</p><div className="integration-list"><div className="integration-row"><span className="integration-logo integration-logo-oura">O</span><div><strong>Oura</strong><small>Sleep, readiness, recovery</small></div><a className={connections.oura ? "integration-action integration-action-connected" : "integration-action"} href="/api/integrations/oura/start">{connections.oura ? "Connected" : "Log in"}</a></div><div className="integration-row"><span className="integration-logo integration-logo-strava">S</span><div><strong>Strava</strong><small>Runs, walks, rides, workouts</small></div><a className={connections.strava ? "integration-action integration-action-connected" : "integration-action"} href="/api/integrations/strava/start">{connections.strava ? "Connected" : "Log in"}</a></div></div>{connectionMessage && <p className="connection-message" role="status">{connectionMessage}</p>}</section>
         </div>
         <footer className="privacy-note"><span className="privacy-dot" /> Your check-ins stay on this device.</footer>
       </div>
