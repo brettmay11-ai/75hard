@@ -42,5 +42,5 @@ export async function GET(request: Request) {
   const dailySleep = await readLatest(dailySleepResponse);
   const readiness = await readLatest(readinessResponse);
   const activity = await readLatest(activityResponse);
-  return Response.json({ connected: true, date, sleep: sleep || dailySleep, readiness, activity });
+  return Response.json({ connected: true, date, sleep: { ...(dailySleep || {}), ...(sleep || {}) }, readiness, activity });
 }
