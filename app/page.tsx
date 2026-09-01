@@ -7,12 +7,12 @@ type Entry = { date: string; habits: Record<string, boolean>; water: number; mov
 type State = { entries: Record<string, Entry> };
 type OuraWorkout = Record<string, unknown>;
 type Oura = { sleepScore?: number; readinessScore?: number; activityScore?: number; steps?: number; recentWorkouts?: string[]; workouts?: OuraWorkout[]; syncedAt?: string };
-type Tab = "today" | "exercise" | "trends" | "history" | "settings";
+type Tab = "today" | "exercise" | "prescription" | "trends" | "history" | "settings";
 type Prescription = { mode: string; title: string; reason: string; moves: string[]; recovery: string[]; food: string[] };
 
 const STORAGE_KEY = "personal-wellness-journal";
 const HABITS = [{ id: "morning", label: "Morning routine", detail: "Start without the scroll" }, { id: "outside", label: "Time outside", detail: "A little daylight counts" }, { id: "movement", label: "Move your body", detail: "Walk, train, stretch" }, { id: "winddown", label: "Evening wind-down", detail: "Make room for rest" }];
-const tabs: { id: Tab; label: string }[] = [{ id: "today", label: "Today" }, { id: "exercise", label: "Exercise" }, { id: "trends", label: "Trends" }, { id: "history", label: "History" }, { id: "settings", label: "Settings" }];
+const tabs: { id: Tab; label: string }[] = [{ id: "today", label: "Today" }, { id: "exercise", label: "Exercise" }, { id: "prescription", label: "Plan" }, { id: "trends", label: "Trends" }, { id: "settings", label: "Settings" }];
 
 function dateKey(date = new Date()) { return date.toISOString().slice(0, 10); }
 function createEntry(date: string): Entry { return { date, habits: Object.fromEntries(HABITS.map((habit) => [habit.id, false])), water: 0, movement: 0, workoutType: "none", note: "" }; }
@@ -71,6 +71,7 @@ export default function Home() {
     <div className={refreshProgress || refreshing ? "refresh-indicator refresh-indicator-visible" : "refresh-indicator"} style={{ transform: `translate(-50%, ${Math.max(refreshProgress - 58, -58)}px)` }}>{refreshing ? "Refreshing" : refreshProgress >= 70 ? "Release to refresh" : "Pull to refresh"}</div>
     <div className="wellness-shell">
       <header className="topbar"><div className="brand-lockup"><span className="brand-mark">W</span><div><p className="eyebrow">Personal wellness</p><h1>Well / Being</h1></div></div><button className="icon-button" onClick={() => { setSelectedDate(today); setTab("today"); }} type="button">Today</button></header>
+      {tab === "prescription" && <section className="page-section prescription-detail"><p className="eyebrow">Your daily prescription</p><h2>{plan.title}</h2><p className="muted">A clear plan for today, shaped by your Oura recovery signals and recent movement.</p><div className="detail-grid"><article><p className="prescription-support-label">Training</p><ol>{plan.moves.map((move) => <li key={move}>{move}</li>)}</ol></article><article><p className="prescription-support-label">Stretch + recovery</p><ul>{plan.recovery.map((item) => <li key={item}>{item}</li>)}</ul></article><article><p className="prescription-support-label">Food focus</p><ul>{plan.food.map((item) => <li key={item}>{item}</li>)}</ul></article></div><div className="prescription-why"><strong>Why this plan</strong><p>{plan.reason} Oura readiness: {oura?.readinessScore ?? "--"}. Sleep score: {oura?.sleepScore ?? "--"}. Activity score: {oura?.activityScore ?? "--"}.</p></div><button className="prescription-primary detail-action" onClick={() => setTab("today")} type="button">Back to today</button></section>}
       {tab === "today" && <>
         <section className="welcome-row"><div><p className="eyebrow">Your daily reset</p><h2>{selectedDate === today ? "How are you, really?" : selectedDate}</h2><p className="muted">Small signals. Better decisions. A little more of you.</p></div><div className="score-ring" style={{ "--score": `${wellnessScore * 3.6}deg` } as React.CSSProperties}><strong>{wellnessScore}</strong><span>wellness<br />score</span></div></section>
         <nav className="date-strip" aria-label="Recent days">{recentDates.map((date) => <button className={selectedDate === date ? "date-pill date-pill-active" : "date-pill"} key={date} onClick={() => setSelectedDate(date)} type="button"><span>{new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(new Date(`${date}T12:00:00`))}</span><strong>{new Date(`${date}T12:00:00`).getDate()}</strong><i className={state.entries[date] ? "date-dot date-dot-filled" : "date-dot"} /></button>)}</nav>
