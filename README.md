@@ -1,6 +1,13 @@
-# Personal 75 Hard Tracker
+# Well / Being
 
-A private, local-first tracker for the 75 Hard challenge. It saves progress in the browser on your device, so there is no account, database, subscription, or paid app required.
+A private, local-first wellness check-in. It saves daily reflections in the browser on your device.
+
+The app can connect read-only to Oura and Strava through OAuth. Add `APP_URL`, `OURA_CLIENT_ID`, `OURA_CLIENT_SECRET`, `STRAVA_CLIENT_ID`, and `STRAVA_CLIENT_SECRET` to the hosted environment.
+
+OAuth callback URLs:
+
+- Oura: `https://YOUR-DOMAIN/api/integrations/oura/callback`
+- Strava: `https://YOUR-DOMAIN/api/integrations/strava/callback`
 
 ## What It Tracks
 

@@ -64,7 +64,18 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .scale-button-active { border-color: var(--ink); background: var(--ink); color: var(--green); }
 .note-surface { grid-column: 1 / -1; }
 .note-surface textarea { display: block; width: 100%; min-height: 105px; margin-top: 20px; resize: vertical; border: 0; border-top: 1px solid var(--line); outline: 0; background: transparent; padding: 16px 0 0; color: var(--ink); font-size: .95rem; }
+.integrations-surface { grid-column: 1 / -1; }
+.integration-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
+.integration-row { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 11px; border: 1px solid var(--line); border-radius: 11px; background: white; padding: 11px; }
+.integration-row > div { display: grid; gap: 4px; }
+.integration-row small { color: var(--muted); font-size: .72rem; }
+.integration-logo { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; color: white; font-weight: 900; }
+.integration-logo-oura { background: #4e5bce; }
+.integration-logo-strava { background: #fc6d26; }
+.integration-action { border-radius: 999px; background: var(--ink); padding: 8px 11px; color: white; font-size: .72rem; font-weight: 900; text-decoration: none; }
+.integration-action-connected { background: var(--mint); color: var(--ink); }
+.connection-message { margin-top: 14px; color: var(--orange); font-size: .78rem; font-weight: 800; }
 .privacy-note { display: flex; align-items: center; gap: 8px; margin-top: 22px; color: var(--muted); font-size: .72rem; }
 .privacy-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-@media (max-width: 700px) { .wellness-shell { width: min(100% - 22px, 560px); padding-top: 16px; } .welcome-row { align-items: flex-start; padding: 42px 0 26px; } .score-ring { width: 96px; } .score-ring strong { font-size: 1.85rem; } .wellness-grid { grid-template-columns: 1fr; } .habit-surface { grid-row: auto; } .surface { padding: 17px; } }
+@media (max-width: 700px) { .wellness-shell { width: min(100% - 22px, 560px); padding-top: 16px; } .welcome-row { align-items: flex-start; padding: 42px 0 26px; } .score-ring { width: 96px; } .score-ring strong { font-size: 1.85rem; } .wellness-grid { grid-template-columns: 1fr; } .habit-surface { grid-row: auto; } .surface { padding: 17px; } .integration-list { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }

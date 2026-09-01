@@ -41,6 +41,8 @@ export default function Home() {
   const [state, setState] = useState<WellnessState>({ entries: {} });
   const [selectedDate, setSelectedDate] = useState(today);
   const [loaded, setLoaded] = useState(false);
+  const [connections, setConnections] = useState({ oura: false, strava: false });
+  const [connectionMessage, setConnectionMessage] = useState("");
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -51,6 +53,17 @@ export default function Home() {
   }, []);
 
   useEffect(() => { if (loaded) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }, [loaded, state]);
+
+  useEffect(() => {
+    void fetch("/api/integrations/status").then(async (response) => {
+      if (response.ok) setConnections(await response.json() as { oura: boolean; strava: boolean });
+    });
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get("connected");
+    const error = params.get("integration_error");
+    if (connected) setConnectionMessage(`${connected === "oura" ? "Oura" : "Strava"} connected.`);
+    if (error) setConnectionMessage(`Could not connect ${error === "oura" ? "Oura" : "Strava"}. Check the app settings and try again.`);
+  }, []);
 
   const entry = state.entries[selectedDate] ?? createEntry(selectedDate);
   const score = scoreEntry(entry);
@@ -93,6 +106,8 @@ export default function Home() {
           <section className="surface metrics-surface"><div className="section-heading"><div><p className="eyebrow">Body signals</p><h3>Check in</h3></div><span className="signal-badge">No judgment</span></div><div className="metric-row"><div><strong>Sleep</strong><small>hours last night</small></div><output>{entry.sleep.toFixed(1)}</output><input aria-label="Hours of sleep" max="12" min="0" onChange={(event) => updateField("sleep", Number(event.target.value))} step="0.5" type="range" value={entry.sleep} /></div><div className="metric-row"><div><strong>Movement</strong><small>minutes today</small></div><output>{entry.movement}</output><input aria-label="Minutes of movement" max="180" min="0" onChange={(event) => updateField("movement", Number(event.target.value))} step="5" type="range" value={entry.movement} /></div><div className="metric-row"><div><strong>Energy</strong><small>how charged are you?</small></div><div className="scale-buttons">{[1, 2, 3, 4, 5].map((value) => <button className={entry.energy === value ? "scale-button scale-button-active" : "scale-button"} key={value} onClick={() => updateField("energy", value)} type="button">{value}</button>)}</div></div><div className="metric-row"><div><strong>Mood</strong><small>what is present?</small></div><div className="scale-buttons">{[1, 2, 3, 4, 5].map((value) => <button className={entry.mood === value ? "scale-button scale-button-active" : "scale-button"} key={value} onClick={() => updateField("mood", value)} type="button">{value}</button>)}</div></div></section>
 
           <section className="surface note-surface"><div className="section-heading"><div><p className="eyebrow">Reflection</p><h3>Leave a note</h3></div><span className="note-prompt">What helped today?</span></div><textarea aria-label="Daily reflection" onChange={(event) => updateField("note", event.target.value)} placeholder="A win, a worry, something you noticed..." value={entry.note} /></section>
+
+          <section className="surface integrations-surface"><div className="section-heading"><div><p className="eyebrow">Connected data</p><h3>Bring your numbers with you</h3></div><span className="signal-badge">Read-only</span></div><p className="muted">Connect the tools you already use to make this check-in more complete.</p><div className="integration-list"><div className="integration-row"><span className="integration-logo integration-logo-oura">O</span><div><strong>Oura</strong><small>Sleep, readiness, recovery</small></div><a className={connections.oura ? "integration-action integration-action-connected" : "integration-action"} href="/api/integrations/oura/start">{connections.oura ? "Connected" : "Connect"}</a></div><div className="integration-row"><span className="integration-logo integration-logo-strava">S</span><div><strong>Strava</strong><small>Runs, walks, rides, workouts</small></div><a className={connections.strava ? "integration-action integration-action-connected" : "integration-action"} href="/api/integrations/strava/start">{connections.strava ? "Connected" : "Connect"}</a></div></div>{connectionMessage && <p className="connection-message" role="status">{connectionMessage}</p>}</section>
         </div>
         <footer className="privacy-note"><span className="privacy-dot" /> Your check-ins stay on this device.</footer>
       </div>
