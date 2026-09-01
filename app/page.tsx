@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, ChartNoAxesColumn, Dumbbell, House, Pill, Settings, Target, type LucideIcon } from "lucide-react";
+import { Activity, ArrowLeft, ChartNoAxesColumn, Dumbbell, HeartPulse, House, Pill, Salad, Settings, Target, type LucideIcon } from "lucide-react";
 import { type TouchEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type WorkoutType = "none" | "strength" | "run" | "cycle" | "sport" | "mobility";
@@ -105,7 +105,26 @@ export default function Home() {
   return <main className="wellness-app" onTouchCancel={touchEnd} onTouchEnd={touchEnd} onTouchMove={touchMove} onTouchStart={touchStart}>
     <div className={refreshProgress || refreshing ? "refresh-indicator refresh-indicator-visible" : "refresh-indicator"} style={{ transform: `translate(-50%, ${Math.max(refreshProgress - 58, -58)}px)` }}>{refreshing ? "Refreshing" : refreshProgress >= 70 ? "Release to refresh" : "Pull to refresh"}</div>
     <div className="wellness-shell">
-      {tab === "prescription" && <section className="page-section prescription-detail"><p className="eyebrow">Your daily prescription</p><h2>{plan.title}</h2><p className="muted">A clear plan for today, shaped by your Oura recovery signals and recent movement.</p><div className="detail-grid"><article><p className="prescription-support-label">Training</p><ol>{plan.moves.map((move) => <li key={move}>{move}</li>)}</ol></article><article><p className="prescription-support-label">Stretch + recovery</p><ul>{plan.recovery.map((item) => <li key={item}>{item}</li>)}</ul></article><article><p className="prescription-support-label">Food focus</p><ul>{plan.food.map((item) => <li key={item}>{item}</li>)}</ul></article></div><div className="prescription-why"><strong>Why this plan</strong><p>{plan.reason} Oura readiness: {oura?.readinessScore ?? "--"}. Sleep score: {oura?.sleepScore ?? "--"}. Activity score: {oura?.activityScore ?? "--"}.</p></div><button className="prescription-primary detail-action" onClick={() => setTab("today")} type="button">Back to today</button></section>}
+      {tab === "prescription" && <section className="page-section prescription-detail">
+        <header className="rx-overview">
+          <div className="rx-topline"><span className="rx-mark"><Pill aria-hidden="true" size={17} strokeWidth={2.2} /> Daily prescription</span><span className="rx-mode">{plan.mode}</span></div>
+          <p className="rx-date">{new Intl.DateTimeFormat("en-US", { weekday: "long", month: "short", day: "numeric" }).format(new Date(`${selectedDate}T12:00:00`))}</p>
+          <h2>{plan.title}</h2>
+          <p className="rx-intro">A clear plan shaped by your Oura recovery signals and recent movement.</p>
+          <div className="rx-signals" aria-label="Oura signals used for this prescription"><span><strong>{oura?.readinessScore ?? "--"}</strong><small>readiness</small></span><span><strong>{oura?.sleepScore ?? "--"}</strong><small>sleep</small></span><span><strong>{oura?.activityScore ?? "--"}</strong><small>activity</small></span></div>
+        </header>
+        <div className="rx-plan-layout">
+          <section className="rx-training" aria-labelledby="rx-training-title">
+            <div className="rx-section-heading"><span className="rx-section-icon"><Dumbbell aria-hidden="true" size={19} strokeWidth={2} /></span><div><p>Training dose</p><h3 id="rx-training-title">Today&apos;s movement</h3></div><small>{plan.moves.length} steps</small></div>
+            <ol className="rx-move-list">{plan.moves.map((move, index) => <li key={move}><span>{String(index + 1).padStart(2, "0")}</span><p>{move}</p></li>)}</ol>
+          </section>
+          <aside className="rx-support-stack" aria-label="Recovery and nutrition support">
+            <section className="rx-support-block"><div className="rx-section-heading"><span className="rx-section-icon rx-recovery-icon"><HeartPulse aria-hidden="true" size={19} strokeWidth={2} /></span><div><p>Recovery dose</p><h3>Restore well</h3></div></div><ul>{plan.recovery.map((item) => <li key={item}>{item}</li>)}</ul></section>
+            <section className="rx-support-block"><div className="rx-section-heading"><span className="rx-section-icon rx-food-icon"><Salad aria-hidden="true" size={19} strokeWidth={2} /></span><div><p>Nutrition dose</p><h3>Food focus</h3></div></div><ul>{plan.food.map((item) => <li key={item}>{item}</li>)}</ul></section>
+          </aside>
+        </div>
+        <section className="rx-why"><div className="rx-why-icon"><Activity aria-hidden="true" size={20} strokeWidth={2} /></div><div><strong>Why this prescription</strong><p>{plan.reason}</p></div><button onClick={() => setTab("today")} type="button"><ArrowLeft aria-hidden="true" size={17} strokeWidth={2} /> Today</button></section>
+      </section>}
       {tab === "today" && <>
         <section className="welcome-row"><div className={`score-panel ${scoreBand(wellnessScore)}`} style={{ "--score-progress": `${wellnessScore}%` } as React.CSSProperties}><div className="score-panel-top"><span className="score-title"><Activity aria-hidden="true" size={18} strokeWidth={2} /> Wellness score</span><span className="score-state">{scoreState(wellnessScore)}</span></div><div className="score-value"><strong>{wellnessScore}</strong><span>/100</span></div><div className="score-meter" aria-label={`Wellness score ${wellnessScore} out of 100`} role="img"><span /></div><div className="score-scale" aria-hidden="true"><span>Restore</span><span>Steady</span><span>Ready</span></div><p>{scoreMessage(wellnessScore)}</p></div>{connected && <div className="oura-inline" aria-label="Oura recovery inputs"><span><strong>{oura?.readinessScore ?? "--"}</strong><small>readiness</small></span><span><strong>{oura?.sleepScore ?? "--"}</strong><small>sleep</small></span><span><strong>{oura?.activityScore ?? "--"}</strong><small>activity</small></span><span><strong>{oura?.steps?.toLocaleString() ?? "--"}</strong><small>steps</small></span></div>}<div><p className="eyebrow">Your daily reset</p><h2>{selectedDate === today ? "How are you, really?" : selectedDate}</h2><p className="muted">Small signals. Better decisions. A little more of you.</p></div></section>
         <nav className="date-strip" aria-label="Recent days">{recentDates.map((date) => <button className={selectedDate === date ? "date-pill date-pill-active" : "date-pill"} key={date} onClick={() => setSelectedDate(date)} type="button"><span>{new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(new Date(`${date}T12:00:00`))}</span><strong>{new Date(`${date}T12:00:00`).getDate()}</strong><i className={state.entries[date] ? "date-dot date-dot-filled" : "date-dot"} /></button>)}</nav>
