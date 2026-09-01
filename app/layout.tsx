@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -12,14 +12,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const viewport: Viewport = {
-  themeColor: "#f4f7f6",
-  viewportFit: "cover",
-};
-
 export const metadata: Metadata = {
   title: "Well / Being",
   description: "A private daily wellness check-in for better self-awareness.",
+  themeColor: "#f5f6ef",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
