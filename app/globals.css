@@ -9,7 +9,7 @@ button { cursor: pointer; touch-action: manipulation; }
 .refresh-indicator { position: fixed; top: 9px; left: 50%; z-index: 20; min-width: 138px; border: 1px solid var(--ink); border-radius: 999px; background: var(--ink); padding: 9px 13px; color: var(--green); text-align: center; font-size: .72rem; font-weight: 900; opacity: 0; pointer-events: none; transition: opacity .16s ease; }
 .refresh-indicator-visible { opacity: 1; }
 .wellness-app { min-height: 100vh; background: radial-gradient(circle at 85% 5%, #e5f1f0 0, transparent 28%), var(--paper); }
-.wellness-shell { width: min(100% - 32px, 1080px); margin: auto; padding: 26px 0 32px; }
+.wellness-shell { display: flex; min-height: calc(100vh - 32px); width: min(100% - 32px, 1080px); flex-direction: column; margin: auto; padding: 26px 0 32px; }
 .topbar, .welcome-row, .section-heading, .metric-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .topbar { padding-bottom: 28px; border-bottom: 1px solid var(--line); }
 .brand-lockup { display: flex; align-items: center; gap: 12px; }
@@ -128,7 +128,7 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .history-list output { color: var(--orange); font-size: 1.1rem; font-weight: 900; }
 .settings-list a, .settings-list button { justify-self: start; border: 0; border-radius: 999px; background: var(--ink); padding: 8px 11px; color: white; font-size: .72rem; font-weight: 900; text-decoration: none; }
 .settings-list .danger-link { background: #9d493e; }
-.bottom-nav { position: sticky; bottom: 10px; z-index: 10; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 32px; border: 1px solid #c8d8da; border-radius: 16px; background: rgb(36 52 58 / .97); padding: 6px 6px 22px; box-shadow: 0 12px 28px rgb(36 52 58 / .16); }
+.bottom-nav { position: sticky; bottom: 10px; z-index: 10; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: auto; border: 1px solid #c8d8da; border-radius: 16px; background: rgb(36 52 58 / .97); padding: 6px 6px 22px; box-shadow: 0 12px 28px rgb(36 52 58 / .16); }
 .bottom-nav button { display: grid; min-height: 52px; place-items: center; border: 0; border-radius: 11px; background: transparent; color: #c4d3d5; font-size: .62rem; font-weight: 900; gap: 3px; }
 .nav-icon { display: grid; place-items: center; color: var(--green); line-height: 1; }
 .nav-label { white-space: nowrap; }
