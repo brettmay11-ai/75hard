@@ -10,6 +10,8 @@ type WellnessEntry = {
   mood: number;
   energy: number;
   movement: number;
+  recovery: number;
+  workoutType: "none" | "strength" | "run" | "cycle" | "sport" | "mobility";
   note: string;
 };
 
@@ -28,12 +30,33 @@ function dateKey(date = new Date()) {
 }
 
 function createEntry(date: string): WellnessEntry {
-  return { date, habits: Object.fromEntries(HABITS.map((habit) => [habit.id, false])), water: 0, sleep: 7, mood: 3, energy: 3, movement: 0, note: "" };
+  return { date, habits: Object.fromEntries(HABITS.map((habit) => [habit.id, false])), water: 0, sleep: 7, mood: 3, energy: 3, movement: 0, recovery: 3, workoutType: "none", note: "" };
+}
+
+function normalizeEntry(entry: Partial<WellnessEntry>, date: string): WellnessEntry {
+  return { ...createEntry(date), ...entry, habits: { ...createEntry(date).habits, ...entry.habits }, recovery: entry.recovery ?? 3, workoutType: entry.workoutType ?? "none" };
 }
 
 function scoreEntry(entry: WellnessEntry) {
   const habits = Object.values(entry.habits).filter(Boolean).length / HABITS.length;
   return Math.round(((habits + Math.min(entry.water / 8, 1) + Math.min(entry.movement / 30, 1) + (entry.sleep >= 7 ? 1 : entry.sleep / 7)) / 4) * 100);
+}
+
+type Prescription = { label: string; title: string; why: string; moves: string[] };
+
+function getPrescription(entry: WellnessEntry, history: WellnessEntry[]): Prescription {
+  const recent = history.filter((item) => item.workoutType !== "none").slice(-3);
+  const hasHardRun = recent.some((item) => item.workoutType === "run" && item.movement >= 35);
+  if (entry.recovery <= 2 || entry.sleep < 6) {
+    return { label: "Low load", title: "Recover on purpose", why: "Your sleep or recovery signal is asking for less intensity today.", moves: ["20 min easy walk", "2 rounds: 8 cat-cows, 8 world's greatest stretches per side", "3 x 45 sec relaxed breathing"] };
+  }
+  if (hasHardRun) {
+    return { label: "Balance day", title: "Build the base", why: "You have a hard run in the recent mix, so today shifts toward strength and control.", moves: ["Goblet squat: 3 x 10", "Push-ups: 3 x 8-12", "1-arm row: 3 x 10 per side", "Dead bug: 3 x 8 per side", "10 min easy walk cooldown"] };
+  }
+  if (entry.recovery >= 4 && entry.energy >= 4 && entry.sleep >= 7) {
+    return { label: "High readiness", title: "Train with intent", why: "Your current signals support a focused strength session.", moves: ["Warm-up: 6 min brisk walk + mobility", "Squat or leg press: 4 x 6-8", "Bench press or push-ups: 4 x 6-10", "Romanian deadlift: 3 x 8-10", "Farmer carry: 4 x 40 sec"] };
+  }
+  return { label: "Steady effort", title: "Move and reset", why: "A moderate session keeps momentum without borrowing from tomorrow.", moves: ["5 min easy warm-up", "Run/walk intervals: 8 x 1 min steady, 1 min easy", "Reverse lunges: 3 x 8 per side", "Plank: 3 x 30-45 sec", "5 min cooldown stretch"] };
 }
 
 export default function Home() {
@@ -47,7 +70,10 @@ export default function Home() {
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      try { setState(JSON.parse(saved) as WellnessState); } catch { window.localStorage.removeItem(STORAGE_KEY); }
+      try {
+        const parsed = JSON.parse(saved) as WellnessState;
+        setState({ entries: Object.fromEntries(Object.entries(parsed.entries || {}).map(([date, item]) => [date, normalizeEntry(item, date)])) });
+      } catch { window.localStorage.removeItem(STORAGE_KEY); }
     }
     setLoaded(true);
   }, []);
@@ -73,6 +99,7 @@ export default function Home() {
     date.setDate(date.getDate() - (6 - index));
     return dateKey(date);
   }), [today]);
+  const prescription = getPrescription(entry, recentDates.slice(0, -1).map((date) => state.entries[date] ?? createEntry(date)));
 
   function updateEntry(next: WellnessEntry) { setState((current) => ({ ...current, entries: { ...current.entries, [next.date]: next } })); }
   function updateField<Key extends keyof WellnessEntry>(key: Key, value: WellnessEntry[Key]) { updateEntry({ ...entry, [key]: value }); }
@@ -98,12 +125,18 @@ export default function Home() {
           })}
         </nav>
 
+        <section className="prescription-card">
+          <div className="prescription-intro"><p className="eyebrow">Today&apos;s prescription</p><h3>{prescription.title}</h3><p>{prescription.why}</p></div>
+          <span className="prescription-label">{prescription.label}</span>
+          <ol className="prescription-list">{prescription.moves.map((move) => <li key={move}>{move}</li>)}</ol>
+        </section>
+
         <div className="wellness-grid">
           <section className="surface habit-surface"><div className="section-heading"><div><p className="eyebrow">Daily anchors</p><h3>Keep it simple</h3></div><span className="section-count">{Object.values(entry.habits).filter(Boolean).length}/{HABITS.length}</span></div><div className="habit-list">{HABITS.map((habit) => <button className={entry.habits[habit.id] ? "habit-row habit-row-done" : "habit-row"} key={habit.id} onClick={() => toggleHabit(habit.id)} type="button"><span className="habit-check">{entry.habits[habit.id] ? "✓" : ""}</span><span className="habit-copy"><strong>{habit.label}</strong><small>{habit.detail}</small></span><span className="habit-arrow">›</span></button>)}</div></section>
 
           <section className="surface hydration-surface"><div className="section-heading"><div><p className="eyebrow">Hydration</p><h3>Water check</h3></div><strong className="big-number">{entry.water}<small>/ 8 glasses</small></strong></div><div className="glass-row" aria-label="Water glasses">{Array.from({ length: 8 }, (_, index) => <button className={index < entry.water ? "water-glass water-glass-full" : "water-glass"} key={index} onClick={() => updateField("water", index + 1 === entry.water ? index : index + 1)} type="button" aria-label={`Set water to ${index + 1} glasses`}><span /></button>)}</div><p className="muted">Tap a glass to log where you are.</p></section>
 
-          <section className="surface metrics-surface"><div className="section-heading"><div><p className="eyebrow">Body signals</p><h3>Check in</h3></div><span className="signal-badge">No judgment</span></div><div className="metric-row"><div><strong>Sleep</strong><small>hours last night</small></div><output>{entry.sleep.toFixed(1)}</output><input aria-label="Hours of sleep" max="12" min="0" onChange={(event) => updateField("sleep", Number(event.target.value))} step="0.5" type="range" value={entry.sleep} /></div><div className="metric-row"><div><strong>Movement</strong><small>minutes today</small></div><output>{entry.movement}</output><input aria-label="Minutes of movement" max="180" min="0" onChange={(event) => updateField("movement", Number(event.target.value))} step="5" type="range" value={entry.movement} /></div><div className="metric-row"><div><strong>Energy</strong><small>how charged are you?</small></div><div className="scale-buttons">{[1, 2, 3, 4, 5].map((value) => <button className={entry.energy === value ? "scale-button scale-button-active" : "scale-button"} key={value} onClick={() => updateField("energy", value)} type="button">{value}</button>)}</div></div><div className="metric-row"><div><strong>Mood</strong><small>what is present?</small></div><div className="scale-buttons">{[1, 2, 3, 4, 5].map((value) => <button className={entry.mood === value ? "scale-button scale-button-active" : "scale-button"} key={value} onClick={() => updateField("mood", value)} type="button">{value}</button>)}</div></div></section>
+          <section className="surface metrics-surface"><div className="section-heading"><div><p className="eyebrow">Body signals</p><h3>Check in</h3></div><span className="signal-badge">No judgment</span></div><div className="metric-row"><div><strong>Sleep</strong><small>hours last night</small></div><output>{entry.sleep.toFixed(1)}</output><input aria-label="Hours of sleep" max="12" min="0" onChange={(event) => updateField("sleep", Number(event.target.value))} step="0.5" type="range" value={entry.sleep} /></div><div className="metric-row"><div><strong>Recovery</strong><small>how ready do you feel?</small></div><div className="scale-buttons">{[1, 2, 3, 4, 5].map((value) => <button className={entry.recovery === value ? "scale-button scale-button-active" : "scale-button"} key={value} onClick={() => updateField("recovery", value)} type="button">{value}</button>)}</div></div><div className="metric-row"><div><strong>Movement</strong><small>minutes today</small></div><output>{entry.movement}</output><input aria-label="Minutes of movement" max="180" min="0" onChange={(event) => updateField("movement", Number(event.target.value))} step="5" type="range" value={entry.movement} /></div><div className="metric-row"><div><strong>Energy</strong><small>how charged are you?</small></div><div className="scale-buttons">{[1, 2, 3, 4, 5].map((value) => <button className={entry.energy === value ? "scale-button scale-button-active" : "scale-button"} key={value} onClick={() => updateField("energy", value)} type="button">{value}</button>)}</div></div><div className="metric-row"><div><strong>Mood</strong><small>what is present?</small></div><div className="scale-buttons">{[1, 2, 3, 4, 5].map((value) => <button className={entry.mood === value ? "scale-button scale-button-active" : "scale-button"} key={value} onClick={() => updateField("mood", value)} type="button">{value}</button>)}</div></div><label className="workout-log"><span>Last workout</span><select aria-label="Last workout type" onChange={(event) => updateField("workoutType", event.target.value as WellnessEntry["workoutType"])} value={entry.workoutType}><option value="none">Not logged</option><option value="strength">Strength</option><option value="run">Run</option><option value="cycle">Cycle</option><option value="sport">Sport</option><option value="mobility">Mobility</option></select></label></section>
 
           <section className="surface note-surface"><div className="section-heading"><div><p className="eyebrow">Reflection</p><h3>Leave a note</h3></div><span className="note-prompt">What helped today?</span></div><textarea aria-label="Daily reflection" onChange={(event) => updateField("note", event.target.value)} placeholder="A win, a worry, something you noticed..." value={entry.note} /></section>
 

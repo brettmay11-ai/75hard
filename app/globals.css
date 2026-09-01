@@ -33,6 +33,14 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .date-pill-active strong { color: white; }
 .date-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--line); }
 .date-dot-filled { background: var(--orange); }
+.prescription-card { display: grid; grid-template-columns: 1fr auto; gap: 18px 24px; margin-bottom: 16px; border-radius: 16px; background: var(--ink); padding: 24px; color: white; box-shadow: 0 16px 32px rgb(21 33 29 / .14); }
+.prescription-card .eyebrow { color: var(--green); }
+.prescription-intro h3 { margin-top: 7px; color: white; font-size: 1.65rem; }
+.prescription-intro p:last-child { max-width: 600px; margin-top: 8px; color: #c5d2c5; font-size: .82rem; line-height: 1.45; }
+.prescription-label { align-self: start; border: 1px solid #667b65; border-radius: 999px; padding: 7px 10px; color: var(--green); font-size: .68rem; font-weight: 900; text-transform: uppercase; }
+.prescription-list { display: grid; grid-template-columns: repeat(5, 1fr); grid-column: 1 / -1; gap: 8px; margin: 0; padding: 0; list-style: none; counter-reset: moves; }
+.prescription-list li { min-height: 64px; border-left: 2px solid var(--orange); background: #23332b; padding: 10px; color: #f3f8f0; font-size: .76rem; line-height: 1.35; }
+.prescription-list li::before { display: block; margin-bottom: 8px; color: var(--green); content: counter(moves, decimal-leading-zero); counter-increment: moves; font-size: .68rem; font-weight: 900; }
 .wellness-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
 .surface { border: 1px solid var(--line); border-radius: 16px; background: rgb(255 255 255 / .7); padding: 22px; box-shadow: 0 12px 30px rgb(21 33 29 / .04); }
 .habit-surface { grid-row: span 2; }
@@ -64,6 +72,8 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .scale-button-active { border-color: var(--ink); background: var(--ink); color: var(--green); }
 .note-surface { grid-column: 1 / -1; }
 .note-surface textarea { display: block; width: 100%; min-height: 105px; margin-top: 20px; resize: vertical; border: 0; border-top: 1px solid var(--line); outline: 0; background: transparent; padding: 16px 0 0; color: var(--ink); font-size: .95rem; }
+.workout-log { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 14px; font-size: .8rem; font-weight: 800; }
+.workout-log select { border: 1px solid var(--line); border-radius: 7px; background: white; padding: 7px 9px; color: var(--ink); font-size: .76rem; }
 .integrations-surface { grid-column: 1 / -1; }
 .integration-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
 .integration-row { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 11px; border: 1px solid var(--line); border-radius: 11px; background: white; padding: 11px; }
@@ -77,5 +87,5 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .connection-message { margin-top: 14px; color: var(--orange); font-size: .78rem; font-weight: 800; }
 .privacy-note { display: flex; align-items: center; gap: 8px; margin-top: 22px; color: var(--muted); font-size: .72rem; }
 .privacy-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-@media (max-width: 700px) { .wellness-shell { width: min(100% - 22px, 560px); padding-top: 16px; } .welcome-row { align-items: flex-start; padding: 42px 0 26px; } .score-ring { width: 96px; } .score-ring strong { font-size: 1.85rem; } .wellness-grid { grid-template-columns: 1fr; } .habit-surface { grid-row: auto; } .surface { padding: 17px; } .integration-list { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .wellness-shell { width: min(100% - 22px, 560px); padding-top: 16px; } .welcome-row { align-items: flex-start; padding: 42px 0 26px; } .score-ring { width: 96px; } .score-ring strong { font-size: 1.85rem; } .wellness-grid { grid-template-columns: 1fr; } .habit-surface { grid-row: auto; } .surface { padding: 17px; } .integration-list { grid-template-columns: 1fr; } .prescription-card { grid-template-columns: 1fr auto; padding: 18px; } .prescription-list { grid-template-columns: repeat(2, 1fr); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
