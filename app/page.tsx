@@ -91,8 +91,9 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
     const connected = params.get("connected");
     const error = params.get("integration_error");
+    const detail = params.get("integration_detail");
     if (connected) setConnectionMessage(`${connected === "oura" ? "Oura" : "Strava"} connected.`);
-    if (error) setConnectionMessage(`Could not connect ${error === "oura" ? "Oura" : "Strava"}. Check the app settings and try again.`);
+    if (error) setConnectionMessage(`Could not connect ${error === "oura" ? "Oura" : "Strava"}${detail ? ` (${detail})` : ""}. Check the app settings and try again.`);
   }, []);
 
   const entry = state.entries[selectedDate] ?? createEntry(selectedDate);
