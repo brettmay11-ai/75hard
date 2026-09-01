@@ -128,7 +128,16 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .history-list output { color: var(--orange); font-size: 1.1rem; font-weight: 900; }
 .settings-list a, .settings-list button { justify-self: start; border: 0; border-radius: 999px; background: var(--ink); padding: 8px 11px; color: white; font-size: .72rem; font-weight: 900; text-decoration: none; }
 .settings-list .danger-link { background: #9d493e; }
-.bottom-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 32px; border-top: 1px solid var(--line); padding-top: 12px; }
+.bottom-nav { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 32px; border-top: 1px solid var(--line); padding-top: 12px; }
 .bottom-nav button { min-height: 40px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: .72rem; font-weight: 900; }
 .bottom-nav-active { background: var(--ink) !important; color: var(--green) !important; }
 @media (max-width: 700px) { .prescription-controls { display: grid; grid-template-columns: repeat(3, 1fr); } .prescription-controls select { width: 100%; } .page-section { padding-top: 42px; } .settings-list > div { align-items: flex-start; flex-direction: column; } }
+.exercise-list { display: grid; gap: 10px; max-width: 720px; margin-top: 28px; }
+.exercise-row { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 11px; background: white; padding: 13px; }
+.exercise-row > div:nth-child(2) { display: grid; gap: 5px; }
+.exercise-row small { color: var(--muted); font-size: .75rem; }
+.exercise-row > span { color: var(--muted); font-size: .75rem; font-weight: 900; }
+.exercise-icon { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 10px; background: var(--mint); color: var(--ink); font-size: 1rem; font-weight: 900; }
+.empty-state { display: grid; gap: 8px; border: 1px dashed #b7cbcb; border-radius: 11px; background: rgb(255 255 255 / .55); padding: 22px; color: var(--muted); }
+.empty-state p { font-size: .82rem; line-height: 1.4; }
+.empty-state a { justify-self: start; border-radius: 999px; background: var(--ink); padding: 8px 11px; color: white; font-size: .72rem; font-weight: 900; text-decoration: none; }
