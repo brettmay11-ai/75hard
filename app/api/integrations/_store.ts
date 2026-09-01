@@ -19,3 +19,7 @@ export async function writeIntegrations(store: IntegrationStore) {
 export function appUrl(request: Request) {
   return (process.env.APP_URL || new URL(request.url).origin).replace(/\/$/, "");
 }
+
+export function ouraRedirectUri(request: Request) {
+  return process.env.OURA_REDIRECT_URI || `${appUrl(request)}/api/integrations/oura/callback`;
+}

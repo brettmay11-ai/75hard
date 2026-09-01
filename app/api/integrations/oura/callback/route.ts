@@ -1,4 +1,4 @@
-import { appUrl, readIntegrations, writeIntegrations } from "../../_store";
+import { appUrl, ouraRedirectUri, readIntegrations, writeIntegrations } from "../../_store";
 
 export const runtime = "nodejs";
 
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       code,
       client_id: process.env.OURA_CLIENT_ID || "",
       client_secret: process.env.OURA_CLIENT_SECRET || "",
-      redirect_uri: `${appUrl(request)}/api/integrations/oura/callback`,
+      redirect_uri: ouraRedirectUri(request),
     }),
   });
   if (!response.ok) {

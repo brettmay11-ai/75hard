@@ -2,7 +2,7 @@
 
 A private, local-first wellness check-in. It saves daily reflections in the browser on your device.
 
-The app can connect read-only to Oura and Strava through OAuth. Add `APP_URL`, `OURA_CLIENT_ID`, `OURA_CLIENT_SECRET`, `STRAVA_CLIENT_ID`, and `STRAVA_CLIENT_SECRET` to the hosted environment.
+The app can connect read-only to Oura and Strava through OAuth. Add `APP_URL`, `OURA_CLIENT_ID`, `OURA_CLIENT_SECRET`, `OURA_REDIRECT_URI`, `STRAVA_CLIENT_ID`, and `STRAVA_CLIENT_SECRET` to the hosted environment.
 
 OAuth callback URLs:
 
