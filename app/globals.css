@@ -133,7 +133,7 @@ h3 { margin-top: 5px; font-size: 1.35rem; letter-spacing: -.04em; }
 .bottom-nav button::before { display: block; color: var(--green); font-size: 1.05rem; line-height: 1; }
 .bottom-nav button:nth-child(1)::before { content: "⌂"; }
 .bottom-nav button:nth-child(2)::before { content: "↗"; }
-.bottom-nav button:nth-child(3)::before { content: "✦"; }
+.bottom-nav button:nth-child(3)::before { content: "Rx"; font-size: .92rem; font-weight: 900; }
 .bottom-nav button:nth-child(4)::before { content: "▥"; }
 .bottom-nav button:nth-child(5)::before { content: "⚙"; }
 .bottom-nav button:nth-child(3) { min-height: 64px; margin-top: -18px; border: 4px solid var(--paper); background: var(--green); color: var(--ink); box-shadow: 0 8px 18px rgb(36 52 58 / .22); }

@@ -12,7 +12,7 @@ type Prescription = { mode: string; title: string; reason: string; moves: string
 
 const STORAGE_KEY = "personal-wellness-journal";
 const HABITS = [{ id: "morning", label: "Morning routine", detail: "Start without the scroll" }, { id: "outside", label: "Time outside", detail: "A little daylight counts" }, { id: "movement", label: "Move your body", detail: "Walk, train, stretch" }, { id: "winddown", label: "Evening wind-down", detail: "Make room for rest" }];
-const tabs: { id: Tab; label: string }[] = [{ id: "today", label: "Today" }, { id: "exercise", label: "Exercise" }, { id: "prescription", label: "Plan" }, { id: "trends", label: "Trends" }, { id: "settings", label: "Settings" }];
+const tabs: { id: Tab; label: string }[] = [{ id: "today", label: "Today" }, { id: "exercise", label: "Exercise" }, { id: "prescription", label: "Prescription" }, { id: "trends", label: "Trends" }, { id: "settings", label: "Settings" }];
 
 function dateKey(date = new Date()) { return date.toISOString().slice(0, 10); }
 function createEntry(date: string): Entry { return { date, habits: Object.fromEntries(HABITS.map((habit) => [habit.id, false])), water: 0, movement: 0, workoutType: "none", note: "" }; }
