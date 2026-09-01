@@ -30,17 +30,19 @@ export async function GET(request: Request) {
   const startDate = start.toISOString().slice(0, 10);
   const headers = { Authorization: `Bearer ${oura.accessToken}` };
   const query = `?start_date=${startDate}&end_date=${date}`;
-  const [sleepResponse, dailySleepResponse, readinessResponse, activityResponse] = await Promise.all([
+  const [sleepResponse, dailySleepResponse, readinessResponse, activityResponse, workoutResponse] = await Promise.all([
     fetch(`https://api.ouraring.com/v2/usercollection/sleep${query}`, { headers }),
     fetch(`https://api.ouraring.com/v2/usercollection/daily_sleep${query}`, { headers }),
     fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness${query}`, { headers }),
     fetch(`https://api.ouraring.com/v2/usercollection/daily_activity${query}`, { headers }),
+    fetch(`https://api.ouraring.com/v2/usercollection/workout${query}`, { headers }),
   ]);
-  if ([sleepResponse, dailySleepResponse, readinessResponse, activityResponse].some((response) => response.status === 401)) return Response.json({ connected: false, expired: true }, { status: 401 });
+  if ([sleepResponse, dailySleepResponse, readinessResponse, activityResponse, workoutResponse].some((response) => response.status === 401)) return Response.json({ connected: false, expired: true }, { status: 401 });
   const readLatest = async (response: Response) => response.ok ? (await response.json() as { data?: Record<string, unknown>[] }).data?.at(-1) || null : null;
   const sleep = await readLatest(sleepResponse);
   const dailySleep = await readLatest(dailySleepResponse);
   const readiness = await readLatest(readinessResponse);
   const activity = await readLatest(activityResponse);
-  return Response.json({ connected: true, date, sleep: { ...(dailySleep || {}), ...(sleep || {}) }, readiness, activity });
+  const workouts = workoutResponse.ok ? (await workoutResponse.json() as { data?: Record<string, unknown>[] }).data || [] : [];
+  return Response.json({ connected: true, date, sleep: { ...(dailySleep || {}), ...(sleep || {}) }, readiness, activity, workouts });
 }

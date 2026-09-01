@@ -16,7 +16,7 @@ type WellnessEntry = {
 };
 
 type WellnessState = { entries: Record<string, WellnessEntry> };
-type OuraSnapshot = { sleepScore?: number; readinessScore?: number; activityScore?: number; steps?: number };
+type OuraSnapshot = { sleepScore?: number; readinessScore?: number; activityScore?: number; steps?: number; recentWorkouts?: string[] };
 
 const STORAGE_KEY = "personal-wellness-journal";
 const HABITS = [
@@ -52,7 +52,7 @@ function getPrescription(entry: WellnessEntry, history: WellnessEntry[], oura?: 
   const recovery = oura?.readinessScore ? Math.ceil(oura.readinessScore / 20) : entry.recovery;
   const sleepScore = oura?.sleepScore;
   const recent = history.filter((item) => item.workoutType !== "none").slice(-3);
-  const hasHardRun = recent.some((item) => item.workoutType === "run" && item.movement >= 35);
+  const hasHardRun = recent.some((item) => item.workoutType === "run" && item.movement >= 35) || Boolean(oura?.recentWorkouts?.some((workout) => /run|cycling|hike/i.test(workout)));
   if (recovery <= 2 || (sleepScore !== undefined && sleepScore < 60) || (sleepScore === undefined && entry.sleep < 6)) {
     return { label: "Low load", title: "Recover on purpose", why: "Your sleep or recovery signal is asking for less intensity today.", moves: ["20 min easy walk", "2 rounds: 8 cat-cows, 8 world's greatest stretches per side", "3 x 45 sec relaxed breathing"], recovery: ["10 min easy mobility: hips, ankles, upper back", "Keep the day conversational; stop before fatigue"], food: ["Protein at each meal: eggs, Greek yogurt, chicken, fish, tofu", "Colorful produce and soup or rice-based meals", "Steady fluids and electrolytes if you feel depleted"] };
   }
@@ -94,11 +94,11 @@ export default function Home() {
     if (!connections.oura) return;
     void fetch(`/api/integrations/oura/data?date=${today}`).then(async (response) => {
       if (!response.ok) { setOuraDataMessage("Oura data needs a fresh connection."); return; }
-      const payload = await response.json() as { sleep?: Record<string, unknown> | null; readiness?: Record<string, unknown> | null; activity?: Record<string, unknown> | null };
+      const payload = await response.json() as { sleep?: Record<string, unknown> | null; readiness?: Record<string, unknown> | null; activity?: Record<string, unknown> | null; workouts?: Record<string, unknown>[] };
       const sleep = payload.sleep || {};
       const readiness = payload.readiness || {};
       const activity = payload.activity || {};
-      setOuraData({ sleepScore: Number(sleep.score) || undefined, readinessScore: Number(readiness.score) || undefined, activityScore: Number(activity.score) || undefined, steps: Number(activity.steps) || undefined });
+      setOuraData({ sleepScore: Number(sleep.score) || undefined, readinessScore: Number(readiness.score) || undefined, activityScore: Number(activity.score) || undefined, steps: Number(activity.steps) || undefined, recentWorkouts: (payload.workouts || []).map((workout) => String(workout.type || workout.activity || workout.name || "workout")) });
     });
   }, [connections.oura, today]);
 
