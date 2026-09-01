@@ -25,17 +25,22 @@ export async function GET(request: Request) {
   const oura = await refreshIfNeeded();
   if (!oura) return Response.json({ connected: false }, { status: 404 });
   const date = new URL(request.url).searchParams.get("date") || new Date().toISOString().slice(0, 10);
+  const start = new Date(`${date}T12:00:00`);
+  start.setDate(start.getDate() - 3);
+  const startDate = start.toISOString().slice(0, 10);
   const headers = { Authorization: `Bearer ${oura.accessToken}` };
-  const query = `?start_date=${date}&end_date=${date}`;
-  const [sleepResponse, readinessResponse, activityResponse] = await Promise.all([
+  const query = `?start_date=${startDate}&end_date=${date}`;
+  const [sleepResponse, dailySleepResponse, readinessResponse, activityResponse] = await Promise.all([
+    fetch(`https://api.ouraring.com/v2/usercollection/sleep${query}`, { headers }),
     fetch(`https://api.ouraring.com/v2/usercollection/daily_sleep${query}`, { headers }),
     fetch(`https://api.ouraring.com/v2/usercollection/daily_readiness${query}`, { headers }),
     fetch(`https://api.ouraring.com/v2/usercollection/daily_activity${query}`, { headers }),
   ]);
-  if ([sleepResponse, readinessResponse, activityResponse].some((response) => response.status === 401)) return Response.json({ connected: false, expired: true }, { status: 401 });
-  const read = async (response: Response) => response.ok ? (await response.json() as { data?: Record<string, unknown>[] }).data?.[0] || null : null;
-  const sleep = await read(sleepResponse);
-  const readiness = await read(readinessResponse);
-  const activity = await read(activityResponse);
-  return Response.json({ connected: true, date, sleep, readiness, activity });
+  if ([sleepResponse, dailySleepResponse, readinessResponse, activityResponse].some((response) => response.status === 401)) return Response.json({ connected: false, expired: true }, { status: 401 });
+  const readLatest = async (response: Response) => response.ok ? (await response.json() as { data?: Record<string, unknown>[] }).data?.at(-1) || null : null;
+  const sleep = await readLatest(sleepResponse);
+  const dailySleep = await readLatest(dailySleepResponse);
+  const readiness = await readLatest(readinessResponse);
+  const activity = await readLatest(activityResponse);
+  return Response.json({ connected: true, date, sleep: sleep || dailySleep, readiness, activity });
 }
