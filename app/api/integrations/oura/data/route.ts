@@ -1,6 +1,9 @@
 import { readIntegrations, writeIntegrations } from "../../_store";
 
 export const runtime = "nodejs";
+const APP_TIME_ZONE = "America/Chicago";
+
+function dateKey(date = new Date()) { const parts = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: APP_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(date).map((part) => [part.type, part.value])); return `${parts.year}-${parts.month}-${parts.day}`; }
 
 async function refreshIfNeeded() {
   const store = await readIntegrations();
@@ -24,10 +27,10 @@ async function refreshIfNeeded() {
 export async function GET(request: Request) {
   const oura = await refreshIfNeeded();
   if (!oura) return Response.json({ connected: false }, { status: 404 });
-  const date = new URL(request.url).searchParams.get("date") || new Date().toISOString().slice(0, 10);
+  const date = new URL(request.url).searchParams.get("date") || dateKey();
   const start = new Date(`${date}T12:00:00`);
   start.setDate(start.getDate() - 6);
-  const startDate = start.toISOString().slice(0, 10);
+  const startDate = dateKey(start);
   const headers = { Authorization: `Bearer ${oura.accessToken}` };
   const query = `?start_date=${startDate}&end_date=${date}`;
   const [sleepResponse, dailySleepResponse, readinessResponse, activityResponse, workoutResponse] = await Promise.all([
